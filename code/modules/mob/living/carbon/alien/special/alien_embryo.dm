@@ -50,11 +50,17 @@
 				if(prob(20))
 					owner.take_bodypart_damage(1)
 			if(SPT_PROB(2, seconds_per_tick))
-				to_chat(owner, span_danger("Your stomach hurts."))
+				to_chat(owner, span_danger("Your chest hurts."))
 				if(prob(20))
 					owner.adjustToxLoss(1)
+					to_chat(owner, span_danger("You feel very weak."))
+					owner.Unconscious(6 SECONDS)
+					owner.set_jitter_if_lower(6 SECONDS)
+				if(prob(44))
+					to_chat(owner, span_danger("Your heart thrashes wildly."))
+					owner.set_jitter_if_lower(6 SECONDS)
 		if(6)
-			to_chat(owner, span_danger("You feel something tearing its way out of your chest..."))
+			to_chat(owner, span_danger("You feel something tearing its way out of your chest!"))
 			owner.adjustToxLoss(5 * seconds_per_tick) // Why is this [TOX]?
 
 /// Controls Xenomorph Embryo growth. If embryo is fully grown (or overgrown), stop the proc. If not, increase the stage by one and if it's not fully grown (stage 6), add a timer to do this proc again after however long the growth time variable is.
@@ -90,6 +96,13 @@
 		return
 
 	bursting = TRUE
+	owner.visible_message(span_danger("[owner] starts shaking uncontrollably!"))
+	to_chat(owner, span_userdanger("You start shaking uncontrollably!"))
+	owner.emote("burstscream")
+	owner.Unconscious(180 SECONDS)
+	owner.set_jitter_if_lower(250 SECONDS)
+	owner.add_mood_event("embryo_agony", /datum/mood_event/embryo_agony)
+
 
 	var/list/candidates = poll_ghost_candidates("Do you want to play as an alien larva that will burst out of [owner.real_name]?", ROLE_ALIEN, ROLE_ALIEN, 100, POLL_IGNORE_ALIEN_LARVA)
 
@@ -99,6 +112,7 @@
 	if(!candidates.len || !owner)
 		bursting = FALSE
 		stage = 5 // If no ghosts sign up for the Larva, let's regress our growth by one minute, we will try again!
+		owner.set_jitter(3 SECONDS)
 		addtimer(CALLBACK(src, PROC_REF(advance_embryo_stage)), growth_time)
 		return
 

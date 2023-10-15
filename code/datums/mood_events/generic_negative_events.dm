@@ -444,3 +444,13 @@
 	description = "UNWORTHY, UNWORTHY, UNWORTHY!!!"
 	mood_change = -200
 	special_screen_obj = "mood_despair"
+
+/datum/mood_event/facehugging_victim
+	description = "That thing just latched onto my face!! What the hell?!"
+	mood_change = -13
+	timeout = 4 MINUTES
+
+/datum/mood_event/embryo_agony
+	description = "DEAR GOD, THE PAIN!!"
+	mood_change = -2000
+	timeout = 4 MINUTES // Bursting victims aren't gonna be coming back anyway.

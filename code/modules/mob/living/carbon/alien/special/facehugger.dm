@@ -178,6 +178,8 @@
 	// early returns and validity checks done: attach.
 	attached++
 	//ensure we detach once we no longer need to be attached
+	M.emote("facehugged")
+	M.add_mood_event("facehugging_victim", /datum/mood_event/facehugging_victim)
 	addtimer(CALLBACK(src, PROC_REF(detach)), MAX_IMPREGNATION_TIME)
 
 

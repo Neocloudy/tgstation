@@ -340,6 +340,57 @@
 	if(!intentional && isanimal_or_basicmob(user))
 		return "makes a loud and pained whimper."
 
+/datum/emote/living/facehugged
+	key = "facehugged"
+	key_third_person = "facehugged"
+	message = "lets out a weak cry!"
+	message_mime = "slumps over!"
+	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
+
+/datum/emote/living/facehugged/get_sound(mob/living/user)
+	if(!ishuman(user))
+		return
+	var/mob/living/carbon/human/human_user = user
+	if(human_user.dna.species.id == SPECIES_HUMAN && !HAS_TRAIT(human_user, TRAIT_MIMING)) // humans
+		if(human_user.physique == FEMALE)
+			return pick('sound/voice/human/femalefacehugged.ogg')
+		else
+			return pick('sound/voice/human/malefacehugged.ogg')
+	if(human_user.dna.species.id == SPECIES_FELINE && !HAS_TRAIT(human_user, TRAIT_MIMING)) // (because they aren't technically human.)
+		if(human_user.physique == FEMALE)
+			return pick('sound/voice/human/femalefacehugged.ogg')
+		else
+			return pick('sound/voice/human/malefacehugged.ogg')
+	if(human_user.dna.species.id == SPECIES_MOTH)
+		return pick('sound/voice/moth/moth_death.ogg')
+
+/datum/emote/living/burstscream
+	key = "burstscream"
+	key_third_person = "burstscreams"
+	message = "screams in agony!"
+	message_mime = "drops their jaw, but no sound comes out."
+	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
+	stat_allowed = SOFT_CRIT
+
+/datum/emote/living/burstscream/get_sound(mob/living/user)
+	if(!ishuman(user))
+		return
+	var/mob/living/carbon/human/human_user = user
+	if(human_user.dna.species.id == SPECIES_HUMAN && !HAS_TRAIT(human_user, TRAIT_MIMING)) // humans
+		if(human_user.physique == FEMALE)
+			return pick('sound/voice/human/femaleagony_1.ogg', 'sound/voice/human/femaleagony_2.ogg',)
+		else
+			return pick('sound/voice/human/maleagony_1.ogg', 'sound/voice/human/maleagony_2.ogg', 'sound/voice/human/maleagony_3.ogg')
+	if(human_user.dna.species.id == SPECIES_FELINE && !HAS_TRAIT(human_user, TRAIT_MIMING)) // felinids (because they aren't technically human.)
+		if(human_user.physique == FEMALE)
+			return pick('sound/voice/human/femaleagony_1.ogg', 'sound/voice/human/femaleagony_2.ogg',)
+		else
+			return pick('sound/voice/human/maleagony_1.ogg', 'sound/voice/human/maleagony_2.ogg', 'sound/voice/human/maleagony_3.ogg')
+	if(human_user.dna.species.id == SPECIES_MOTH && !HAS_TRAIT(human_user, TRAIT_MIMING)) // moths
+		return pick('sound/voice/moth/scream_moth.ogg')
+	if(human_user.dna.species.id == SPECIES_LIZARD && !HAS_TRAIT(human_user, TRAIT_MIMING)) // lizards
+		return pick('sound/voice/lizard/lizard_scream_1.ogg', 'sound/voice/lizard/lizard_scream_2.ogg', 'sound/voice/lizard/lizard_scream_3.ogg')
+
 /datum/emote/living/scowl
 	key = "scowl"
 	key_third_person = "scowls"
