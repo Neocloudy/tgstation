@@ -204,20 +204,20 @@
 	size = new_size
 	switch(size)
 		if(0 to FISH_SIZE_TINY_MAX)
-			w_class = WEIGHT_CLASS_TINY
+			update_weight_class(WEIGHT_CLASS_TINY)
 			inhand_icon_state = "fish_small"
 		if(FISH_SIZE_TINY_MAX to FISH_SIZE_SMALL_MAX)
 			inhand_icon_state = "fish_small"
-			w_class = WEIGHT_CLASS_SMALL
+			update_weight_class(WEIGHT_CLASS_SMALL)
 		if(FISH_SIZE_SMALL_MAX to FISH_SIZE_NORMAL_MAX)
 			inhand_icon_state = "fish_normal"
-			w_class = WEIGHT_CLASS_NORMAL
+			update_weight_class(WEIGHT_CLASS_NORMAL)
 		if(FISH_SIZE_NORMAL_MAX to FISH_SIZE_BULKY_MAX)
 			inhand_icon_state = "fish_bulky"
-			w_class = WEIGHT_CLASS_BULKY
+			update_weight_class(WEIGHT_CLASS_BULKY)
 		if(FISH_SIZE_BULKY_MAX to INFINITY)
 			inhand_icon_state = "fish_huge"
-			w_class = WEIGHT_CLASS_HUGE
+			update_weight_class(WEIGHT_CLASS_HUGE)
 	if(fillet_type)
 		var/init_fillets = initial(num_fillets)
 		var/amount = max(round(init_fillets * size / FISH_FILLET_NUMBER_SIZE_DIVISOR, 1), 1)
@@ -314,6 +314,8 @@
 		last_feeding = world.time
 	else
 		var/datum/reagent/wrong_reagent = pick(fed_reagents.reagent_list)
+		if(!wrong_reagent)
+			return
 		fed_reagent_type = wrong_reagent.type
 		fed_reagents.remove_reagent(fed_reagent_type, 0.1)
 	SEND_SIGNAL(src, COMSIG_FISH_FED, fed_reagents, fed_reagent_type)
@@ -439,13 +441,13 @@
 //Fish breeding stops if fish count exceeds this.
 #define AQUARIUM_MAX_BREEDING_POPULATION 20
 
-/obj/item/fish/proc/ready_to_reproduce(being_targetted = FALSE)
+/obj/item/fish/proc/ready_to_reproduce(being_targeted = FALSE)
 	var/obj/structure/aquarium/aquarium = loc
 	if(!istype(aquarium))
 		return FALSE
-	if(being_targetted && HAS_TRAIT(src, TRAIT_FISH_NO_MATING))
+	if(being_targeted && HAS_TRAIT(src, TRAIT_FISH_NO_MATING))
 		return FALSE
-	if(!being_targetted && length(aquarium.get_fishes()) >= AQUARIUM_MAX_BREEDING_POPULATION)
+	if(!being_targeted && length(aquarium.get_fishes()) >= AQUARIUM_MAX_BREEDING_POPULATION)
 		return FALSE
 	return aquarium.allow_breeding && health >= initial(health) * 0.8 && stable_population > 1 && world.time >= breeding_wait
 
