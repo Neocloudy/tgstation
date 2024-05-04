@@ -155,16 +155,23 @@
 
 	// probiscis-blocker handling
 	if(target.is_mouth_covered(ITEM_SLOT_HEAD))
-		target.visible_message(span_danger("[src] smashes against [target]'s [target.head]!"), \
-							span_userdanger("[src] smashes against your [target.head]!"))
+		target.visible_message(span_danger("[src] smashes against [target]'s [target.head.name]!"), \
+							span_userdanger("[src] smashes against your [target.head.name] with a loud clang!"), \
+							span_hear("You hear a clang and hissing."))
+		playsound(loc, 'sound/effects/helmet_noise.ogg', 30)
 		Die()
 		return FALSE
 
 	if(target.wear_mask)
 		var/obj/item/clothing/worn_mask = target.wear_mask
 		if(target.dropItemToGround(worn_mask))
-			target.visible_message(span_danger("[src] tears [worn_mask] off of [target]'s face!"), \
-								span_userdanger("[src] tears [worn_mask] off of your face!"))
+			target.visible_message(span_danger("[src] smashes against [target]'s [worn_mask.name] and rips it off!"), \
+								span_userdanger("[src] smashes against your [worn_mask.name] and rips it off!"))
+	if(target.head && real) // dramatic effect, looks better - let's also make sure fake huggers can't be used for forced helmet removal
+		var/obj/item/clothing/worn_headgear = target.head
+		if(target.dropItemToGround(worn_headgear))
+			target.visible_message(span_danger("[src] slips under [target]'s [worn_headgear.name], clawing it off!"), \
+								span_userdanger("[src] slips under your [worn_headgear.name], clawing it off!"))
 
 	if(!target.equip_to_slot_if_possible(src, ITEM_SLOT_MASK, 0, 1, 1))
 		return FALSE
@@ -176,15 +183,19 @@
 		return
 	// early returns and validity checks done: attach.
 	attached++
+	if(real)
+		M.emote("facehugged")
+		notify_ghosts(
+			"[M] has been hugged by a facehugger!",
+			source = M,
+			notify_flags = NOTIFY_CATEGORY_NOFLASH,
+		)
 	//ensure we detach once we no longer need to be attached
-	M.emote("facehugged")
-	M.add_mood_event("facehugging_victim", /datum/mood_event/facehugging_victim)
 	addtimer(CALLBACK(src, PROC_REF(detach)), MAX_IMPREGNATION_TIME)
 
 
 	if(!sterile)
-		M.take_bodypart_damage(strength,0) //done here so that humans in helmets take damage
-		M.Unconscious(MAX_IMPREGNATION_TIME/0.3) //something like 25 ticks = 20 seconds with the default settings
+		M.Unconscious(MAX_IMPREGNATION_TIME/0.3) //~50 second sleep - the math should be 25 ticks = 20 seconds
 
 	GoIdle() //so it doesn't jump the people that tear it off
 
@@ -207,6 +218,7 @@
 								span_userdanger("[src] falls limp after violating your face!"))
 
 		Die()
+		target.dropItemToGround(src)
 		icon_state = "[base_icon_state]_impregnated"
 		worn_icon_state = "[base_icon_state]_impregnated"
 

@@ -371,20 +371,16 @@
 /datum/emote/living/facehugged
 	key = "facehugged"
 	key_third_person = "facehugged"
-	message = "lets out a weak cry!"
+	message = "cries out in pain!"
 	message_mime = "slumps over!"
+	only_forced_audio = TRUE
 	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
 
 /datum/emote/living/facehugged/get_sound(mob/living/user)
 	if(!ishuman(user))
 		return
 	var/mob/living/carbon/human/human_user = user
-	if(human_user.dna.species.id == SPECIES_HUMAN && !HAS_TRAIT(human_user, TRAIT_MIMING)) // humans
-		if(human_user.physique == FEMALE)
-			return pick('sound/voice/human/femalefacehugged.ogg')
-		else
-			return pick('sound/voice/human/malefacehugged.ogg')
-	if(human_user.dna.species.id == SPECIES_FELINE && !HAS_TRAIT(human_user, TRAIT_MIMING)) // (because they aren't technically human.)
+	if(ishumanbasic(human_user) || isfelinid(human_user) && !HAS_MIND_TRAIT(human_user, TRAIT_MIMING)) // humans and cats
 		if(human_user.physique == FEMALE)
 			return pick('sound/voice/human/femalefacehugged.ogg')
 		else
@@ -398,18 +394,13 @@
 	message = "screams in agony!"
 	message_mime = "drops their jaw, but no sound comes out."
 	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
-	stat_allowed = SOFT_CRIT
+	only_forced_audio = TRUE
 
 /datum/emote/living/burstscream/get_sound(mob/living/user)
 	if(!ishuman(user))
 		return
 	var/mob/living/carbon/human/human_user = user
-	if(human_user.dna.species.id == SPECIES_HUMAN && !HAS_TRAIT(human_user, TRAIT_MIMING)) // humans
-		if(human_user.physique == FEMALE)
-			return pick('sound/voice/human/femaleagony_1.ogg', 'sound/voice/human/femaleagony_2.ogg',)
-		else
-			return pick('sound/voice/human/maleagony_1.ogg', 'sound/voice/human/maleagony_2.ogg', 'sound/voice/human/maleagony_3.ogg')
-	if(human_user.dna.species.id == SPECIES_FELINE && !HAS_TRAIT(human_user, TRAIT_MIMING)) // felinids (because they aren't technically human.)
+	if(ishumanbasic(human_user) || isfelinid(human_user) && !HAS_MIND_TRAIT(human_user, TRAIT_MIMING)) // humans and cats
 		if(human_user.physique == FEMALE)
 			return pick('sound/voice/human/femaleagony_1.ogg', 'sound/voice/human/femaleagony_2.ogg',)
 		else

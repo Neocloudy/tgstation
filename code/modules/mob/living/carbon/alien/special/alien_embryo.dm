@@ -52,10 +52,10 @@
 			if(SPT_PROB(2, seconds_per_tick))
 				to_chat(owner, span_danger("Your chest hurts."))
 				if(prob(20))
-					owner.adjustToxLoss(1)
-					to_chat(owner, span_danger("You feel very weak."))
-					owner.Unconscious(6 SECONDS)
-					owner.set_jitter_if_lower(6 SECONDS)
+					owner.adjustToxLoss(6)
+					owner.visible_message(span_warning("[owner] starts shaking uncontrollably!"), span_userdanger("You start shaking uncontrollably!"))
+					owner.Unconscious(12 SECONDS)
+					owner.set_jitter_if_lower(12 SECONDS)
 				if(prob(44))
 					to_chat(owner, span_danger("Your heart thrashes wildly."))
 					owner.set_jitter_if_lower(6 SECONDS)
@@ -123,6 +123,10 @@
 
 	var/mutable_appearance/overlay = mutable_appearance('icons/mob/nonhuman-player/alien.dmi', "burst_lie")
 	owner.add_overlay(overlay)
+	owner.visible_message(span_warning("[owner] starts shaking uncontrollably!"), span_userdanger("You start shaking uncontrollably!"))
+	owner.emote("burstscream")
+	owner.Unconscious(180 SECONDS)
+	owner.set_jitter_if_lower(250 SECONDS)
 
 	var/atom/xeno_loc = get_turf(owner)
 	var/mob/living/carbon/alien/larva/new_xeno = new(xeno_loc)
@@ -131,7 +135,7 @@
 	new_xeno.add_traits(list(TRAIT_HANDS_BLOCKED, TRAIT_IMMOBILIZED, TRAIT_NO_TRANSFORM), type) //so we don't move during the bursting animation
 	new_xeno.SetInvisibility(INVISIBILITY_MAXIMUM, id=type)
 
-	sleep(0.6 SECONDS)
+	sleep(3 SECONDS)
 
 	if(QDELETED(src) || QDELETED(owner))
 		qdel(new_xeno)

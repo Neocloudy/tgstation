@@ -5,6 +5,7 @@
 	worn_icon = 'icons/mob/clothing/head/helmet.dmi'
 	icon_state = "helmet"
 	inhand_icon_state = "helmet"
+	drop_sound = 'sound/effects/helmet_noise.ogg'
 	armor_type = /datum/armor/head_helmet
 	cold_protection = HEAD
 	min_cold_protection_temperature = HELMET_MIN_TEMP_PROTECT
