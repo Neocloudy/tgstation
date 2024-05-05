@@ -53,6 +53,7 @@
 				to_chat(owner, span_danger("Your chest hurts."))
 				if(prob(20))
 					owner.adjustToxLoss(6)
+					owner.emote("gasp")
 					owner.visible_message(span_warning("[owner] starts shaking uncontrollably!"), span_userdanger("You start shaking uncontrollably!"))
 					owner.Unconscious(12 SECONDS)
 					owner.set_jitter_if_lower(12 SECONDS)
@@ -121,7 +122,7 @@
 		addtimer(CALLBACK(src, PROC_REF(advance_embryo_stage)), growth_time)
 		return
 
-	var/mutable_appearance/overlay = mutable_appearance('icons/mob/nonhuman-player/alien.dmi', "burst_lie")
+	var/mutable_appearance/overlay = mutable_appearance('icons/mob/nonhuman-player/alien.dmi', "burst_stand")
 	owner.add_overlay(overlay)
 	owner.visible_message(span_warning("[owner] starts shaking uncontrollably!"), span_userdanger("You start shaking uncontrollably!"))
 	owner.emote("burstscream")
@@ -135,7 +136,7 @@
 	new_xeno.add_traits(list(TRAIT_HANDS_BLOCKED, TRAIT_IMMOBILIZED, TRAIT_NO_TRANSFORM), type) //so we don't move during the bursting animation
 	new_xeno.SetInvisibility(INVISIBILITY_MAXIMUM, id=type)
 
-	sleep(3 SECONDS)
+	sleep(4 SECONDS)
 
 	if(QDELETED(src) || QDELETED(owner))
 		qdel(new_xeno)

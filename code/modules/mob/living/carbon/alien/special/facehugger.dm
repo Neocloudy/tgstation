@@ -165,8 +165,8 @@
 	if(target.wear_mask)
 		var/obj/item/clothing/worn_mask = target.wear_mask
 		if(target.dropItemToGround(worn_mask))
-			target.visible_message(span_danger("[src] smashes against [target]'s [worn_mask.name] and rips it off!"), \
-								span_userdanger("[src] smashes against your [worn_mask.name] and rips it off!"))
+			target.visible_message(span_danger("[src] smashes against [target]'s [worn_mask.name], ripping it off!"), \
+								span_userdanger("[src] smashes against your [worn_mask.name], ripping it off!"))
 	if(target.head && real) // dramatic effect, looks better - let's also make sure fake huggers can't be used for forced helmet removal
 		var/obj/item/clothing/worn_headgear = target.head
 		if(target.dropItemToGround(worn_headgear))
