@@ -61,8 +61,8 @@
 					to_chat(owner, span_danger("Your heart thrashes wildly."))
 					owner.set_jitter_if_lower(6 SECONDS)
 		if(6)
-			to_chat(owner, span_danger("You feel something tearing its way out of your chest!"))
-			owner.adjustToxLoss(5 * seconds_per_tick) // Why is this [TOX]?
+			to_chat(owner, span_boldwarning(pick("It's in your insides!", "It's gnawing you!", "Make it stop!", "You're going to die!", "It's tearing you apart!")))
+			owner.adjustToxLoss(1 * seconds_per_tick) // Why is this [TOX]?
 
 /// Controls Xenomorph Embryo growth. If embryo is fully grown (or overgrown), stop the proc. If not, increase the stage by one and if it's not fully grown (stage 6), add a timer to do this proc again after however long the growth time variable is.
 /obj/item/organ/internal/body_egg/alien_embryo/proc/advance_embryo_stage()
