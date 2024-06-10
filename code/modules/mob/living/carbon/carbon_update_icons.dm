@@ -451,6 +451,13 @@
 /mob/living/carbon/proc/update_hud_back(obj/item/I)
 	return
 
+/mob/living/carbon/proc/update_burst()
+	remove_overlay(BURST_LAYER)
+	if(!chestburst)
+		return
+	overlays_standing[BURST_LAYER] = mutable_appearance('icons/mob/nonhuman-player/alien.dmi', chestburst == CARBON_IS_CHEST_BURSTING ? "burst_stand" : "bursted_stand", -BURST_LAYER)
+	apply_overlay(BURST_LAYER)
+
 //Overlays for the worn overlay so you can overlay while you overlay
 //eg: ammo counters, primed grenade flashing, etc.
 //"icon_file" is used automatically for inhands etc. to make sure it gets the right inhand file

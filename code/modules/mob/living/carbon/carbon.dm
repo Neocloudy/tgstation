@@ -948,6 +948,10 @@
 		set_handcuffed(null)
 		update_handcuffed()
 
+	if(heal_flags & HEAL_ADMIN)
+		chestburst = CARBON_NO_CHEST_BURST
+		update_burst()
+
 	return ..()
 
 /mob/living/carbon/do_strange_reagent_revival(healing_amount)
@@ -968,6 +972,9 @@
 
 	if (HAS_TRAIT(src, TRAIT_DEFIB_BLACKLISTED))
 		return DEFIB_FAIL_BLACKLISTED
+
+	if (chestburst)
+		return DEFIB_FAIL_CHESTBURST
 
 	if ((getBruteLoss() >= MAX_REVIVE_BRUTE_DAMAGE) || (getFireLoss() >= MAX_REVIVE_FIRE_DAMAGE))
 		return DEFIB_FAIL_TISSUE_DAMAGE

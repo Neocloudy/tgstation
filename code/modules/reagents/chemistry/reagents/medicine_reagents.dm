@@ -948,6 +948,12 @@
 		exposed_mob.visible_message(span_warning("[exposed_mob]'s body does not react..."))
 		return
 
+	var/mob/living/carbon/exposed_carbon = exposed_mob
+	if(exposed_carbon.chestburst) // chestburst victims also aren't coming back
+		exposed_mob.visible_message(span_warning("[exposed_mob]'s body convulses violently, before falling still..."))
+		exposed_mob.do_jitter_animation(10)
+		return
+
 	if(iscarbon(exposed_mob) && !(methods & INGEST)) //simplemobs can still be splashed
 		return ..()
 

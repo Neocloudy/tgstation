@@ -122,6 +122,8 @@
 		if(!just_sleeping)
 			if(HAS_TRAIT(src, TRAIT_SUICIDED))
 				. += span_warning("[t_He] appear[p_s()] to have committed suicide... there is no hope of recovery.")
+			if(chestburst)
+				. += span_deadsay("<b><i>[t_He] [t_has] a giant hole in [t_his] chest!</i></b>")
 
 			. += generate_death_examine_text()
 

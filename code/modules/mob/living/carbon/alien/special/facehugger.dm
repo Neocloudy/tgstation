@@ -73,8 +73,10 @@
 	if(!real)//So that giant red text about probisci doesn't show up.
 		return
 	switch(stat)
-		if(DEAD,UNCONSCIOUS)
+		if(DEAD)
 			. += span_boldannounce("[src] is not moving.")
+		if(UNCONSCIOUS)
+			. += span_boldannounce("[src] quivers a bit, but barely moves.")
 		if(CONSCIOUS)
 			. += span_boldannounce("[src] seems to be active!")
 	if (sterile)
@@ -186,7 +188,7 @@
 	if(real)
 		M.emote("facehugged")
 		notify_ghosts(
-			"[M] has been hugged by a facehugger!",
+			"[M] has been hugged by a facehugger at [get_area(M)]!",
 			source = M,
 			notify_flags = NOTIFY_CATEGORY_NOFLASH,
 		)

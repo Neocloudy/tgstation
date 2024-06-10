@@ -123,4 +123,7 @@
 	/// A bitfield of "bodyshapes", updated by /obj/item/bodypart/proc/synchronize_bodyshapes()
 	var/bodyshape = BODYSHAPE_HUMANOID
 
+	/// The carbon's chestburst status, used for preventing revivability and updating sprites
+	var/chestburst = CARBON_NO_CHEST_BURST
+
 	COOLDOWN_DECLARE(bleeding_message_cd)
