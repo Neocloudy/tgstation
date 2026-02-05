@@ -1,0 +1,13 @@
+map_file = "DeltaStation2.dmm"
+map_name = "Delta Station"
+map_path = "map_files/Deltastation"
+version = 1
+
+[job_changes.Cook]
+additional_cqc_areas = ["/area/station/service/cafeteria"]
+
+[shuttles]
+cargo = "cargo_delta"
+emergency = "emergency_delta"
+ferry = "ferry_fancy"
+whiteship = "whiteship_delta"

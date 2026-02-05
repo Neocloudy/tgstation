@@ -1,0 +1,19 @@
+map_file = "CatwalkStation_2023.dmm"
+map_name = "Catwalk Station"
+map_path = "map_files/CatwalkStation"
+version = 1
+
+[shuttles]
+cargo = "cargo_catwalk"
+emergency = "emergency_catwalk"
+ferry = "ferry_fancy"
+whiteship = "whiteship_meta"
+
+[[traits]]
+Linkage = "Cross"
+Up = 1
+
+[[traits]]
+Baseturf = "/turf/open/openspace/airless"
+Down = 1
+Linkage = "Cross"

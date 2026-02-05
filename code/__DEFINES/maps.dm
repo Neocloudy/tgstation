@@ -60,10 +60,10 @@ Always compile, always use that verb, and always make sure that it works for wha
 /// The maploader index for the maps maximum z
 #define MAP_MAXZ 6
 
-/// Path for the next_map.json file, if someone, for some messed up reason, wants to change it.
-#define PATH_TO_NEXT_MAP_JSON "data/next_map.json"
+/// Path for the next_map.toml file, if someone, for some messed up reason, wants to change it.
+#define PATH_TO_NEXT_MAP_TOML "data/next_map.toml"
 
-/// List of directories we can load map .json files from
+/// List of directories we can load map .toml files from
 #define MAP_DIRECTORY_MAPS "_maps"
 #define MAP_DIRECTORY_DATA "data"
 #define MAP_DIRECTORY_WHITELIST list(MAP_DIRECTORY_MAPS,MAP_DIRECTORY_DATA)

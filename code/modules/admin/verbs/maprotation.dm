@@ -54,7 +54,7 @@ ADMIN_VERB(admin_change_map, R_SERVER, "Change Map", "Set the next map.", ADMIN_
 
 		qdel(M)
 		var/config_file = null
-		var/list/json_value = list()
+		var/list/toml_value = list()
 		var/config = tgui_alert(user,"Would you like to upload an additional config for this map?", "Map Config", list("Yes", "No"))
 		if(config == "Yes")
 			config_file = input(user, "Pick file:", "Config JSON File") as null|file
@@ -68,9 +68,9 @@ ADMIN_VERB(admin_change_map, R_SERVER, "Change Map", "Set the next map.", ADMIN_
 			if(!fcopy(config_file, "data/custom_map_json/[config_file]"))
 				return
 
-			json_value = virtual_map.LoadConfig("data/custom_map_json/[config_file]", TRUE)
+			toml_value = virtual_map.LoadConfig("data/custom_map_json/[config_file]", TRUE)
 
-			if(!json_value)
+			if(!toml_value)
 				to_chat(src, span_warning("Failed to load config: [config_file]. Check that the fields are filled out correctly. \"map_path\": \"custom\" and \"map_file\": \"your_map_name.dmm\""))
 				return
 		else
@@ -90,7 +90,7 @@ ADMIN_VERB(admin_change_map, R_SERVER, "Change Map", "Set the next map.", ADMIN_
 						continue
 					virtual_map.shuttles[s] = shuttle
 
-			json_value = list(
+			toml_value = list(
 				"version" = MAP_CURRENT_VERSION,
 				"map_name" = virtual_map.map_name,
 				"map_path" = CUSTOM_MAP_PATH,
@@ -98,10 +98,7 @@ ADMIN_VERB(admin_change_map, R_SERVER, "Change Map", "Set the next map.", ADMIN_
 				"shuttles" = virtual_map.shuttles,
 			)
 
-		// If the file isn't removed text2file will just append.
-		if(fexists(PATH_TO_NEXT_MAP_JSON))
-			fdel(PATH_TO_NEXT_MAP_JSON)
-		text2file(json_encode(json_value), PATH_TO_NEXT_MAP_JSON)
+		rustg_file_write(rustg_toml_encode(toml_value), PATH_TO_NEXT_MAP_TOML)
 
 		if(SSmap_vote.set_next_map(virtual_map))
 			message_admins("[key_name_admin(user)] has changed the map to [virtual_map.map_name]")

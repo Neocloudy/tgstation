@@ -5,7 +5,7 @@
 
 /datum/map_config
 	// Metadata
-	var/config_filename = "_maps/metastation.json"
+	var/config_filename = "_maps/metastation.toml"
 	var/defaulted = TRUE  // set to FALSE by LoadConfig() succeeding
 	// Config from maps.txt
 	var/config_max_users = 0
@@ -76,8 +76,8 @@
 /**
  * Proc handling the loading of map configs. Will return the default map config using [/proc/load_default_map_config] if the loading of said file fails for any reason whatsoever, so we always have a working map for the server to run.
  * Arguments:
- * * filename - Name of the config file for the map we want to load. The .json file extension is added during the proc, so do not specify filenames with the extension.
- * * directory - Name of the directory containing our .json - Must be in MAP_DIRECTORY_WHITELIST. We default this to MAP_DIRECTORY_MAPS as it will likely be the most common usecase. If no filename is set, we ignore this.
+ * * filename - Name of the config file for the map we want to load. The .toml file extension is added during the proc, so do not specify filenames with the extension.
+ * * directory - Name of the directory containing our .toml - Must be in MAP_DIRECTORY_WHITELIST. We default this to MAP_DIRECTORY_MAPS as it will likely be the most common usecase. If no filename is set, we ignore this.
  * * error_if_missing - Bool that says whether failing to load the config for the map will be logged in log_world or not as it's passed to LoadConfig().
  *
  * Returns the config for the map to load.
@@ -85,7 +85,7 @@
 /proc/load_map_config(filename = null, directory = null, error_if_missing = TRUE)
 	var/datum/map_config/configuring_map = load_default_map_config()
 
-	if(filename) // If none is specified, then go to look for next_map.json, for map rotation purposes.
+	if(filename) // If none is specified, then go to look for next_map.toml, for map rotation purposes.
 
 		//Default to MAP_DIRECTORY_MAPS if no directory is passed
 		if(directory)
@@ -95,9 +95,9 @@
 		else
 			directory = MAP_DIRECTORY_MAPS
 
-		filename = "[directory]/[filename].json"
+		filename = "[directory]/[filename].toml"
 	else
-		filename = PATH_TO_NEXT_MAP_JSON
+		filename = PATH_TO_NEXT_MAP_TOML
 
 
 	if (!configuring_map.LoadConfig(filename, error_if_missing))
@@ -106,45 +106,62 @@
 	return configuring_map
 
 
-#define CHECK_EXISTS(X) if(!istext(json[X])) { log_world("[##X] missing from json!"); return; }
-
+#define CHECK_EXISTS(X) if(!istext(toml[X])) { log_world("[##X] missing from toml!"); return; }
+#define PATH_TO_NEXT_MAP_LEGACY "data/next_map.json"
 /datum/map_config/proc/LoadConfig(filename, error_if_missing)
 	if(!fexists(filename))
+		// let's first check for a legacy config file and retry if one exists
+		// this saves most of the effort, leaving only committing encoded files
+		// to version control
+		var/legacy_json_path = replacetext(filename, ".toml", ".json")
+		if(fexists(legacy_json_path))
+			var/legacy_json_raw = rustg_file_read(legacy_json_path)
+			var/list/decoded_json = json_decode(legacy_json_raw)
+			var/list/traits = decoded_json["traits"]
+			for(var/list/level in traits)
+				// rustg toml parser is dumb and can't just skip null datatypes, other parsers do though
+				// this targets ztraits in particular because that's where map configs use the null type
+				for(var/trait in level)
+					if(level[trait] != null)
+						continue
+					level -= trait
+			var/conversion = rustg_toml_encode(decoded_json)
+			rustg_file_write(conversion, filename)
+			fdel(legacy_json_path)
+			if(filename != PATH_TO_NEXT_MAP_LEGACY)
+				stack_trace("Map config file [legacy_json_path] required a conversion to TOML to be loaded. Please run the game locally for long enough to complete subsystem init and commit the converted files in '_maps/'.")
+			return LoadConfig(filename, error_if_missing)
 		if(error_if_missing)
 			log_world("map_config not found: [filename]")
 		return
 
-	var/json = file(filename)
-	if(!json)
+	var/toml = filename // no converting this to a file ref, rustg_read_toml_file doesn't understand them
+
+	if(!toml)
 		log_world("Could not open map_config: [filename]")
 		return
 
-	json = file2text(json)
-	if(!json)
-		log_world("map_config is not text: [filename]")
-		return
-
-	json = json_decode(json)
-	if(!json)
-		log_world("map_config is not json: [filename]")
+	toml = rustg_read_toml_file(toml)
+	if(!toml)
+		log_world("map_config couldn't be decoded from TOML to a list: [filename]")
 		return
 
 	config_filename = filename
 
-	if(!json["version"])
+	if(!toml["version"])
 		log_world("map_config missing version!")
 		return
 
-	if(json["version"] != MAP_CURRENT_VERSION)
-		log_world("map_config has invalid version [json["version"]]!")
+	if(toml["version"] != MAP_CURRENT_VERSION)
+		log_world("map_config has invalid version [toml["version"]]!")
 		return
 
 	CHECK_EXISTS("map_name")
-	map_name = json["map_name"]
+	map_name = toml["map_name"]
 	CHECK_EXISTS("map_path")
-	map_path = json["map_path"]
+	map_path = toml["map_path"]
 
-	map_file = json["map_file"]
+	map_file = toml["map_file"]
 	// "map_file": "MetaStation.dmm"
 	if (istext(map_file))
 		if (!fexists("_maps/[map_path]/[map_file]"))
@@ -157,19 +174,19 @@
 				log_world("Map file ([map_path]/[file]) does not exist!")
 				return
 	else
-		log_world("map_file missing from json!")
+		log_world("map_file missing from toml!")
 		return
 
-	if (islist(json["shuttles"]))
-		var/list/L = json["shuttles"]
+	if (islist(toml["shuttles"]))
+		var/list/L = toml["shuttles"]
 		for(var/key in L)
 			var/value = L[key]
 			shuttles[key] = value
-	else if ("shuttles" in json)
+	else if ("shuttles" in toml)
 		log_world("map_config shuttles is not a list!")
 		return
 
-	traits = json["traits"]
+	traits = toml["traits"]
 	// "traits": [{"Linkage": "Cross"}, {"Space Ruins": true}]
 	if (islist(traits))
 		// "Station" is set by default, but it's assumed if you're setting
@@ -182,65 +199,65 @@
 		log_world("map_config traits is not a list!")
 		return
 
-	var/temp = json["space_ruin_levels"]
+	var/temp = toml["space_ruin_levels"]
 	if (isnum(temp))
 		space_ruin_levels = temp
 	else if (!isnull(temp))
 		log_world("map_config space_ruin_levels is not a number!")
 		return
 
-	temp = json["space_empty_levels"]
+	temp = toml["space_empty_levels"]
 	if (isnum(temp))
 		space_empty_levels = temp
 	else if (!isnull(temp))
 		log_world("map_config space_empty_levels is not a number!")
 		return
 
-	temp = json["wilderness_levels"]
+	temp = toml["wilderness_levels"]
 	if (isnum(temp))
 		wilderness_levels = temp
 	else if (!isnull(temp))
 		log_world("map_config wilderness_levels is not a number!")
 		return
 
-	if ("minetype" in json)
-		minetype = json["minetype"]
+	if ("minetype" in toml)
+		minetype = toml["minetype"]
 
-	if ("planetary" in json)
-		planetary = json["planetary"]
+	if ("planetary" in toml)
+		planetary = toml["planetary"]
 
-	if ("blacklist_file" in json)
-		blacklist_file = json["blacklist_file"]
+	if ("blacklist_file" in toml)
+		blacklist_file = toml["blacklist_file"]
 
-	if ("load_all_away_missions" in json)
-		load_all_away_missions = json["load_all_away_missions"]
+	if ("load_all_away_missions" in toml)
+		load_all_away_missions = toml["load_all_away_missions"]
 
-	if ("give_players_hooks" in json)
-		give_players_hooks = json["give_players_hooks"]
+	if ("give_players_hooks" in toml)
+		give_players_hooks = toml["give_players_hooks"]
 
-	allow_custom_shuttles = json["allow_custom_shuttles"] != FALSE
+	allow_custom_shuttles = toml["allow_custom_shuttles"] != FALSE
 
-	if ("job_changes" in json)
-		if(!islist(json["job_changes"]))
+	if ("job_changes" in toml)
+		if(!islist(toml["job_changes"]))
 			log_world("map_config \"job_changes\" field is missing or invalid!")
 			return
-		job_changes = json["job_changes"]
+		job_changes = toml["job_changes"]
 
-	if("library_areas" in json)
-		if(!islist(json["library_areas"]))
+	if("library_areas" in toml)
+		if(!islist(toml["library_areas"]))
 			log_world("map_config \"library_areas\" field is missing or invalid!")
 			return
-		for(var/path_as_text in json["library_areas"])
+		for(var/path_as_text in toml["library_areas"])
 			var/path = text2path(path_as_text)
 			if(!ispath(path, /area))
 				stack_trace("Invalid path in mapping config for additional library areas: \[[path_as_text]\]")
 				continue
 			library_areas += path
 
-	if ("height_autosetup" in json)
-		height_autosetup = json["height_autosetup"]
+	if ("height_autosetup" in toml)
+		height_autosetup = toml["height_autosetup"]
 
-	var/list/wilderness = json["wilderness"]
+	var/list/wilderness = toml["wilderness"]
 	// If we got wilderness levels, fetch them from the config
 	if (islist(wilderness))
 		wilderness_directory = wilderness["directory"]
@@ -253,7 +270,7 @@
 
 #ifdef UNIT_TESTS
 	// Check for unit tests to skip, no reason to check these if we're not running tests
-	for(var/path_as_text in json["ignored_unit_tests"])
+	for(var/path_as_text in toml["ignored_unit_tests"])
 		var/path_real = text2path(path_as_text)
 		if(!ispath(path_real, /datum/unit_test))
 			stack_trace("Invalid path in mapping config for ignored unit tests: \[[path_as_text]\]")
@@ -262,7 +279,8 @@
 #endif
 
 	defaulted = FALSE
-	return json
+	return toml
+#undef PATH_TO_NEXT_MAP_LEGACY
 #undef CHECK_EXISTS
 
 /datum/map_config/proc/GetFullMapPaths()
@@ -273,4 +291,4 @@
 		. += "_maps/[map_path]/[file]"
 
 /datum/map_config/proc/MakeNextMap()
-	return config_filename == PATH_TO_NEXT_MAP_JSON || fcopy(config_filename, PATH_TO_NEXT_MAP_JSON)
+	return config_filename == PATH_TO_NEXT_MAP_TOML || fcopy(config_filename, PATH_TO_NEXT_MAP_TOML)
