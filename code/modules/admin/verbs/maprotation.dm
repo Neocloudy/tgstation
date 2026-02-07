@@ -57,21 +57,23 @@ ADMIN_VERB(admin_change_map, R_SERVER, "Change Map", "Set the next map.", ADMIN_
 		var/list/toml_value = list()
 		var/config = tgui_alert(user,"Would you like to upload an additional config for this map?", "Map Config", list("Yes", "No"))
 		if(config == "Yes")
-			config_file = input(user, "Pick file:", "Config JSON File") as null|file
+			config_file = input(user, "Pick file:", "Config TOML File") as null|file
 			if(isnull(config_file))
 				return
-			if(copytext("[config_file]", -5) != ".json")
-				to_chat(src, span_warning("Filename must end in '.json': [config_file]"))
+			if(copytext("[config_file]", -5) != ".toml")
+				to_chat(user, span_warning("Filename must end in '.toml': [config_file]"))
 				return
-			if(fexists("data/custom_map_json/[config_file]"))
-				fdel("data/custom_map_json/[config_file]")
-			if(!fcopy(config_file, "data/custom_map_json/[config_file]"))
+			if(fexists("tmp/custom_map_toml/[config_file]"))
+				fdel("tmp/custom_map_toml/[config_file]")
+			if(!fcopy(config_file, "tmp/custom_map_toml/[config_file]"))
 				return
 
-			toml_value = virtual_map.LoadConfig("data/custom_map_json/[config_file]", TRUE)
+			toml_value = virtual_map.LoadConfig("tmp/custom_map_toml/[config_file]", TRUE, FALSE)
 
 			if(!toml_value)
-				to_chat(src, span_warning("Failed to load config: [config_file]. Check that the fields are filled out correctly. \"map_path\": \"custom\" and \"map_file\": \"your_map_name.dmm\""))
+				to_chat(user, span_warning("Failed to load config: [config_file]. Make sure these fields are filled out correctly:\n\
+											• map_path = \"custom\"\n\
+											• map_file = \"your_map_name.dmm\""))
 				return
 		else
 			virtual_map = load_map_config()
@@ -103,7 +105,7 @@ ADMIN_VERB(admin_change_map, R_SERVER, "Change Map", "Set the next map.", ADMIN_
 		if(SSmap_vote.set_next_map(virtual_map))
 			message_admins("[key_name_admin(user)] has changed the map to [virtual_map.map_name]")
 			SSmap_vote.admin_override = TRUE
-		fdel("data/custom_map_json/[config_file]")
+		fdel("tmp/custom_map_toml/[config_file]")
 	else
 		var/datum/map_config/virtual_map = maprotatechoices[chosenmap]
 		message_admins("[key_name_admin(user)] is changing the map to [virtual_map.map_name]")

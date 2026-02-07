@@ -79,10 +79,11 @@
  * * filename - Name of the config file for the map we want to load. The .toml file extension is added during the proc, so do not specify filenames with the extension.
  * * directory - Name of the directory containing our .toml - Must be in MAP_DIRECTORY_WHITELIST. We default this to MAP_DIRECTORY_MAPS as it will likely be the most common usecase. If no filename is set, we ignore this.
  * * error_if_missing - Bool that says whether failing to load the config for the map will be logged in log_world or not as it's passed to LoadConfig().
+ * * error_if_converted - Will runtime if the map config was found as a JSON file and re-encoded as a TOML file.
  *
  * Returns the config for the map to load.
  */
-/proc/load_map_config(filename = null, directory = null, error_if_missing = TRUE)
+/proc/load_map_config(filename = null, directory = null, error_if_missing = TRUE, error_if_converted)
 	var/datum/map_config/configuring_map = load_default_map_config()
 
 	if(filename) // If none is specified, then go to look for next_map.toml, for map rotation purposes.
@@ -108,11 +109,21 @@
 
 #define CHECK_EXISTS(X) if(!istext(toml[X])) { log_world("[##X] missing from toml!"); return; }
 #define PATH_TO_NEXT_MAP_LEGACY "data/next_map.json"
-/datum/map_config/proc/LoadConfig(filename, error_if_missing)
+/**
+ * Loads a map `.toml` into memory. Returns the decoded `.toml`.
+ *
+ * Also supports `.json` files, but may runtime depending on arguments.
+ *
+ * Arguments:
+ * * `filename`—Path to the config file on the filesystem
+ * * `error_if_missing`—Will runtime if the map config cannot be found on the filesystem
+ * * `error_if_converted`—Will runtime if the map config was found as a JSON file and converted to TOML
+ */
+/datum/map_config/proc/LoadConfig(filename, error_if_missing, error_if_converted)
 	if(!fexists(filename))
 		// let's first check for a legacy config file and retry if one exists
-		// this saves most of the effort, leaving only committing encoded files
-		// to version control
+		// this is intended to save most of the effort, leaving only committing
+		// encoded files to version control
 		var/legacy_json_path = replacetext(filename, ".toml", ".json")
 		if(fexists(legacy_json_path))
 			var/legacy_json_raw = rustg_file_read(legacy_json_path)
@@ -128,9 +139,9 @@
 			var/conversion = rustg_toml_encode(decoded_json)
 			rustg_file_write(conversion, filename)
 			fdel(legacy_json_path)
-			if(filename != PATH_TO_NEXT_MAP_LEGACY)
-				stack_trace("Map config file [legacy_json_path] required a conversion to TOML to be loaded. Please run the game locally for long enough to complete subsystem init and commit the converted files in '_maps/'.")
-			return LoadConfig(filename, error_if_missing)
+			if(error_if_converted && filename != PATH_TO_NEXT_MAP_LEGACY)
+				stack_trace("Map config file [legacy_json_path] required a conversion to TOML to be loaded and error_if_converted is TRUE. Please run the game locally for long enough to complete subsystem init and commit the converted files in '_maps/'.")
+			return LoadConfig(filename, error_if_missing, error_if_converted)
 		if(error_if_missing)
 			log_world("map_config not found: [filename]")
 		return
