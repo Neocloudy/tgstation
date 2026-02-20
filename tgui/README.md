@@ -1,24 +1,48 @@
-# tgui
+# TGUI
 
 ## Introduction
 
-tgui is a robust user interface framework of /tg/station.
+TGUI is the robust user interface framework of /tg/station. It's very different
+from other UI frameworks you'll encounter in BYOND. It's very reliant on web
+technologies and JavaScript as opposed to _just_ DM.
 
-tgui is very different from most UIs you will encounter in BYOND programming. It
-is heavily reliant on Javascript and web technologies as opposed to DM. If you
-are familiar with NanoUI (a library which can be found on almost every other
-SS13 codebase), tgui should be fairly easy to pick up.
+TGUI will be easier to learn if you're familiar with any of these:
+- TypeScript/JavaScript
+- HTML or other XML-like languages
+- NanoUI from other SS13 codebases
 
-## Learn tgui
+## Table of contents
 
-People come to tgui from different backgrounds and with different learning
+- [TGUI](#tgui)
+   * [Introduction](#introduction)
+   * [Learn TGUI](#learn-tgui)
+      + [Practical Tutorial](#practical-tutorial)
+      + [Guides](#guides)
+      + [Other Documentation](#other-documentation)
+   * [Pre-requisites](#pre-requisites)
+   * [Usage](#usage)
+      + [Using Windows scripts](#using-windows-scripts)
+      + [Using Juke Build](#using-juke-build)
+      + [Using Bun](#using-bun)
+   * [Dev server tools](#dev-server-tools)
+      + [Dev server troubleshooting](#dev-server-troubleshooting)
+         - [It's not attaching to the game](#its-not-attaching-to-the-game)
+         - [It's crashing](#its-crashing)
+         - [It's not finding my BYOND cache](#its-not-finding-my-byond-cache)
+   * [WebView2 DevTools](#webview2-devtools)
+   * [Project Structure](#project-structure)
+   * [License](#license)
+
+## Learn TGUI
+
+People come to TGUI from different backgrounds and with different learning
 styles. Whether you prefer a more theoretical or a practical approach, we hope
 you’ll find this section helpful.
 
 ### Practical Tutorial
 
-If you are completely new to frontend and prefer to **learn by doing**, start
-with our [practical tutorial](docs/tutorial-and-examples.md).
+If you are completely new to frontend and prefer to **learn by doing,** start
+with our [practical tutorial.](docs/tutorial-and-examples.md)
 
 ### Guides
 
@@ -26,14 +50,14 @@ This project uses React. Take your time to read the guide:
 
 - [React guide](https://react.dev/learn)
 
-If you were already familiar with an older, Ractive-based tgui and want to
-translate concepts between old and new tgui, read this
-[interface conversion guide](docs/converting-old-tgui-interfaces.md).
+If you were already familiar with an older, Ractive-based TGUI and want to
+translate concepts between old and new TGUI, read this
+[interface conversion guide](docs/legacy/converting-old-tgui-interfaces.md).
 
 ### Other Documentation
 
 - [Component Reference](https://tgstation.github.io/tgui-core/?path=/docs/components-animatednumber--docs) - UI building blocks
-- [Tgui Core](https://github.com/tgstation/tgui-core) - The component library for tgui.
+- [tgui-core](https://github.com/tgstation/tgui-core) - The component library for TGUI.
 - [Using TGUI and Byond API for custom HTML popups](docs/tgui-for-custom-html-popups.md)
 - [Chat Embedded Components](docs/chat-embedded-components.md)
 - [Writing Tests](docs/writing-tests.md)
@@ -44,49 +68,59 @@ If you are using the tooling provided in this repo, everything is included! Feel
 free to skip this step.
 
 However, if you want finer control over the installation or build process, you
-will need these:
-
-- [Node v22.11+](https://nodejs.org/en/download/)
-  - **LTS** release is recommended instead of latest
-  - **DO NOT install Chocolatey if Node installer asks you to!**
-- [Yarn v4.8.1+](https://yarnpkg.com/getting-started/install)
-  - Yarn is normally installed with corepack.
+will need [Bun](https://bun.com/docs/installation).
 
 ## Usage
 
-**Via provided cmd scripts (Windows)**:
+> [!IMPORTANT]
+> Remember to run a full build of TGUI before submitting a PR and ensure
+> all your modified files are properly formatted.
+>
+> Catching tooling issues yourself will save you time and commits, as you will
+> not have to wait for GitHub's slow servers to point these issues out for you.
+>
+> In 99.9% of situations you will need to address this yourself for your PR
+> to be merged into the code. The 0.1% is reserved for false positives or
+> other things that are truly out of your control.
 
-- `bin/tgui-build` - Build tgui in production mode and run a full suite of code
+### Using Windows scripts
+
+- `bin/tgui-build` - Build TGUI in production mode and run a full suite of code
   checks.
 - `bin/tgui-dev` - Launch a development server.
   - `bin/tgui-dev --reload` - Reload byond cache once.
   - `bin/tgui-dev --debug` - Run server with debug logging enabled.
 
+> [!NOTE]
 > To open a CMD or PowerShell window in any open folder, right click **while
-> holding Shift** on any free space in the folder, then click on either
-> `Open command window here` or `Open PowerShell window here`.
+> holding Shift** on any free space in the folder, then click on
+> *Open in Terminal* (Windows 11), *Open command window here* (Windows 10),
+> or *Open PowerShell window here* (either version).
 
-**Via Juke Build (cross-platform(No))**:
+### Using Juke Build
 
-- `tools/build/build.sh tgui` - Build tgui in production mode.
-- `tools/build/build.sh tgui-dev` - Build tgui in production mode.
+- `tools/build/build.sh tgui` - Build TGUI in production mode.
+- `tools/build/build.sh tgui-dev` - Build TGUI in production mode.
   - `tools/build/build.sh tgui-dev --reload` - Reload byond cache once.
   - `tools/build/build.sh tgui-dev --debug` - Run server with debug logging
     enabled.
 - `tools/build/build.sh tgui-lint` - Show (and auto-fix) problems with the code.
 - `tools/build/build.sh tgui-test` - Run unit and integration tests.
 - `tools/build/build.sh tgui-analyze` - Run a bundle analyzer.
-- `tools/build/build.sh tgui-clean` - Clean up tgui folder.
+- `tools/build/build.sh tgui-clean` - Clean up TGUI folder.
 
+> [!NOTE]
+>
 > With Juke Build, you can run multiple targets together, e.g.:
 >
 > ```
 > tools/build/build.sh tgui tgui-lint tgui-tsc tgui-test
 > ```
 
-**Via Bun (cross-platform)**:
+### Using Bun
 
-Run `bun install` once to install tgui dependencies.
+Run `bun install` once to install tgui dependencies, then `cd` into the `tgui`
+directory.
 
 - `bun tgui:build` - Build tgui in production mode.
   - `bun tgui:build [options]` - Build tgui with custom webpack options.
@@ -99,29 +133,40 @@ Run `bun install` once to install tgui dependencies.
 - `bun tgui:analyze` - Run a bundle analyzer.
 - `bun tgfont:build` - Build icon fonts.
 
-## Important Memo
+## Dev server tools
 
-Remember to always run a full build of tgui before submitting a PR, because it
-comes with the full suite of CI checks, and runs much faster on your computer
-than on GitHub servers. It will save you some time and possibly a few broken
-commits! Address the issues that are reported by the tooling as much as
-possible, because maintainers will beat you with a ruler and force you to
-address them anyway (unless it's a false positive or something unfixable).
+You can run the TGUI dev server using the method for your case:
+[Windows](#using-windows-scripts) / [Juke Build](#using-juke-build) /
+[Bun Scripts](#using-bun)
 
-## Troubleshooting
+When using the dev server, you will have access to certain development only
+features.
 
-**Development server isn't attaching to the game**
+- **Hot reloading:** TGUI interfaces will update as soon as you modify them,
+	saving you from having to recompile the codebase each time you modify an
+	interface.
+- **Debug logs:** When running the dev server, the server will print debug
+	logs and time spent on rendering into the terminal. Use this information to
+	optimize your code, and try to keep re-renders low, and time spent
+	re-rendering as low as possible.
+- **Kitchen sink:** Click the green bug on the title bar of a window to open it.
+	This is a UI to view backend data without alt-tabbing to your terminal every
+	few seconds.
 
-Make sure that you have a tgui window open before you run the dev server. Then,
+### Dev server troubleshooting
+
+#### It's not attaching to the game
+
+Make sure that you have a TGUI window open before you run the dev server. Then,
 once it's running, you may need to press F5 to refresh the page.
 
-**Development server is crashing**
+#### It's crashing
 
-Make sure path to your working directory does not contain spaces, special
-unicode characters, exclamation marks or any other special symbols. If so, move
-codebase to a location which does not contain these characters.
+Make sure the path to your working directory doesn't contain spaces, special
+unicode characters, or other symbols that upset filesystems. If so, move your
+installation of the codebase to a location that doesn't have these characters.
 
-**Development server doesn't find my BYOND cache!**
+#### It's not finding my BYOND cache
 
 This happens if your Documents folder in Windows has a custom location, for
 example in `E:\Libraries\Documents`. Development server tries its best to find
@@ -129,42 +174,15 @@ this non-standard location (searches for a Windows Registry key), but it can
 fail. You have to run the dev server with an additional environmental variable,
 with a full path to BYOND cache.
 
-```
+```env
 BYOND_CACHE="E:/Libraries/Documents/BYOND/cache"
 ```
 
-**Webpack errors out with some cryptic messages!**
+## WebView2 DevTools
 
-> Example: `No template for dependency: PureExpressionDependency`
-
-Webpack stores its cache on disk since tgui 4.3, and it is very sensitive to
-build configuration. So if you update webpack, or share the same cache directory
-between development and production build, it will start hallucinating.
-
-To fix this kind of problem, run `bin/tgui --clean` and try again.
-
-## Dev Server Tools
-
-When developing with `tgui-dev-server`, you will have access to certain
-development only features.
-
-**Debug Logs.** When running server via `bin/tgui --dev --debug`, server will
-print debug logs and time spent on rendering. Use this information to optimize
-your code, and try to keep re-renders below 16ms.
-
-**Kitchen Sink.** Press `F12` or click the green bug to open the KitchenSink
-interface. This interface is a playground to test various tgui components.
-
-**Layout Debugger.** Press `F11` to toggle the _layout debugger_. It will show
-outlines of all tgui elements, which makes it easy to understand how everything
-comes together, and can reveal certain layout bugs which are not normally
-visible.
-
-## Browser Developer Tools
-
-WebView2 is chromium based, so you can access the dev tools much easier than its
-predecessor. Simply go to debug tab in your stat panel and click "Allow Browser
-Inspection". You can then f12 to open the standard chrome dev tools.
+WebView2 is [Chromium-based](https://www.chromium.org/Home/), so you can access the dev tools much easier than its
+predecessor. Simply go to Debug tab in your statpanel and click "Allow Browser
+Inspect". You can then press F12 or right click to access DevTools.
 
 ## Project Structure
 

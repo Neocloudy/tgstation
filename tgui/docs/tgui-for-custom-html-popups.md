@@ -2,6 +2,19 @@
 
 TGUI in its current form would not exist without a very robust underlying layer that interfaces TGUI code with the BYOND browser component. This very layer can also be used to write simple and robust HTML popups, with access to many convenient APIs. In this article, you'll learn how to make a TGUI powered HTML popup and leverage all APIs that it provides.
 
+## Table of contents
+
+- [Using TGUI and Byond API for custom HTML popups](#using-tgui-and-byond-api-for-custom-html-popups)
+   * [How to create a window](#how-to-create-a-window)
+   * [Sending assets](#sending-assets)
+   * [Inlined HTML, CSS and JS](#inlined-html-css-and-js)
+   * [Communication](#communication)
+      + [Message structure](#message-structure)
+      + [DM ➡ JS](#dm-js)
+      + [JS ➡ DM](#js-dm)
+   * [BYOND Skin API](#byond-skin-api)
+   * [Strict Mode](#strict-mode)
+
 ## How to create a window
 
 TGUI in order to create a window (popup) uses the `/datum/tgui_window` class. Feel free to take a look at its [source code](../../code/modules/tgui/tgui_window.dm), as all of its procs are very well documented. This class takes care of spawning the BYOND's browser element, normalizes the browser environment (because users might have IE8 on their system, or in future, it might be Microsoft Edge) and specifies a very rigid communication protocol between DM and JS.

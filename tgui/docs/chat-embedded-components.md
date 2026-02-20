@@ -1,10 +1,22 @@
 # Chat Embedded Components
 
-Have you ever embedded html into tgui chat? Maybe just css stuff like `<span class='alien'> </span>`?
-Have you ever wanted to embed tgui components instead? For styling or ease of use of course.
+Have you ever embedded HTML into TGUI chat? Maybe just css stuff like `<span class='alien'> </span>`?
+Have you ever wanted to embed TGUI components instead? For styling or ease of use of course.
 
-Well we have a system for that! You can pass component information in via html attributes, and it'll be rendered in chat.
+Well we have a system for that! You can pass component information in via HTML attributes, and it'll be rendered in chat.
 How? Let's get into it.
+
+## Table of contents
+
+- [Chat Embedded Components](#chat-embedded-components)
+   * [How it works](#how-it-works)
+      + [Targeting a component](#targeting-a-component)
+      + [Sending props](#sending-props)
+         - [Sending a prop's name](#sending-a-props-name)
+         - [Sending a prop's value](#sending-a-props-value)
+            * [**Booleans**](#booleans)
+            * [**Numbers**](#numbers)
+            * [**Strings**](#strings)
 
 ## How it works
 
@@ -16,7 +28,7 @@ There's two components here, let's break them down.
 
 ### Targeting a component
 
-Telling tgui chat what component you want to render is really simple. You just embed its name in the data-component attribute.
+Telling TGUI chat what component you want to render is really simple. You just embed its name in the data-component attribute.
 
 You saw it before, but for reference,
 `<div data-component=\"Tooltip\"></div>`
@@ -27,7 +39,7 @@ There is a bit of nuance here however.
 We can't embed components that haven't been prewhitelisted.
 
 This isn't because of security concerns or anything, we just can't lookup components by their name without creating a lookup table.
-You can find that in [tgui chat's renderer](../packages/tgui-panel/chat/renderer.js) under the name `TGUI_CHAT_COMPONENTS`
+You can find that in [TGUI chat's renderer](../packages/tgui-panel/chat/renderer.tsx) under the name `TGUI_CHAT_COMPONENTS`
 
 Adding a new component is simple, just add its name to the dictionary, and import it into the file.
 
@@ -49,7 +61,7 @@ It's really simple, just another data attribute, with the name you want to refer
 
 Something important to note here, data attribute names cannot contain any upper case chars, or anything that isn't XML compatible.
 
-Because of this, we need to do another map of sent name -> intended name. This can also be found in the [renderer file](../packages/tgui-panel/chat/renderer.js) with the name `TGUI_CHAT_ATTRIBUTES_TO_PROPS`
+Because of this, we need to do another map of sent name -> intended name. This can also be found in the [renderer file](../packages/tgui-panel/chat/renderer.tsx) with the name `TGUI_CHAT_ATTRIBUTES_TO_PROPS`
 
 #### Sending a prop's value
 
@@ -77,6 +89,6 @@ So `data-int=\"-10\"` will be parsed as `-10`
 
 ##### **Strings**
 
-Strings are the most simple. If a value is passed to an html attribute, and it doesn't meet any of the above requirements, it will be
+Strings are the most simple. If a value is passed to an HTML attribute, and it doesn't meet any of the above requirements, it will be
 
 `data-string=\"hey man, it works!\"`
