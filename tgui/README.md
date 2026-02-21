@@ -79,9 +79,9 @@ will need [Bun](https://bun.com/docs/installation).
 > Catching tooling issues yourself will save you time and commits, as you will
 > not have to wait for GitHub's slow servers to point these issues out for you.
 >
-> In 99.9% of situations you will need to address this yourself for your PR
-> to be merged into the code. The 0.1% is reserved for false positives or
-> other things that are truly out of your control.
+> In most situations you will need to address this yourself for your PR
+> to be merged. Exceptions are for false positives or other things that
+> are truly out of your control.
 
 ### Using Windows scripts
 
