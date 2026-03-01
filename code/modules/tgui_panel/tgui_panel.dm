@@ -3,16 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/**
- * tgui_panel datum
- * Hosts tgchat and other nice features.
- */
+/// Hosts TGUI chat and its features
 /datum/tgui_panel
+	/// The client that owns this
 	var/client/client
+	/// The window to use
 	var/datum/tgui_window/window
-	var/broken = FALSE
+	/// `world.time` when this datum was initialized
 	var/initialized_at
-	/// Each client notifies on protected playback, so this prevents spamming admins.
+	/// Each client notifies on protected playback, so this prevents spamming admins
 	var/static/admins_warned = FALSE
 
 /datum/tgui_panel/New(client/client, id)
@@ -25,20 +24,12 @@
 	window.close()
 	return ..()
 
-/**
- * public
- *
- * TRUE if panel is initialized and ready to receive messages.
- */
+/// Returns `TRUE` if the panel is ready to receive messages
 /datum/tgui_panel/proc/is_ready()
-	return !broken && window.is_ready()
+	return window.is_ready()
 
-/**
- * public
- *
- * Initializes tgui panel.
- */
-/datum/tgui_panel/proc/initialize(force = FALSE)
+/// Initializes the panel
+/datum/tgui_panel/proc/initialize()
 	set waitfor = FALSE
 	// Minimal sleep to defer initialization to after client constructor
 	sleep(1 TICKS)
@@ -57,23 +48,23 @@
 	addtimer(CALLBACK(src, PROC_REF(on_initialize_timed_out)), 5 SECONDS)
 	window.send_message("testTelemetryCommand")
 
-/**
- * private
- *
- * Called when initialization has timed out.
- */
+/// Called 5 seconds after initialization, this direct outputs some
+/// text to the client to allow them to refresh the panel.
 /datum/tgui_panel/proc/on_initialize_timed_out()
+	PRIVATE_PROC(TRUE)
 	// Currently does nothing but sending a message to old chat.
 	SEND_TEXT(client, span_userdanger("Failed to load fancy chat, click <a href='byond://?src=[REF(src)];reload_tguipanel=1'>HERE</a> to attempt to reload it."))
 
 /**
- * private
+ * Callback for handling incoming TGUI messages.
  *
- * Callback for handling incoming tgui messages.
+ * Arguments:
+ * * `type`—The incoming message type
+ * * `payload`—Associative list of parameters
  */
 /datum/tgui_panel/proc/on_message(type, payload)
+	PRIVATE_PROC(TRUE)
 	if(type == "ready")
-		broken = FALSE
 		window.send_message("update", list(
 			"config" = list(
 				"client" = list(
@@ -103,10 +94,6 @@
 		analyze_telemetry(payload)
 		return TRUE
 
-/**
- * public
- *
- * Sends a round restart notification.
- */
+/// Sends the round restart notification
 /datum/tgui_panel/proc/send_roundrestart()
 	window.send_message("roundrestart")

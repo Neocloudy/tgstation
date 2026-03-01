@@ -4,7 +4,11 @@
  */
 
 /**
- * tgui datum (represents a UI).
+ * `/datum/`tgui` represents a UI.
+ *
+ * This is the datum you *most likely* want if you aren't making
+ * a completely new interface from scratch. It handles all
+ * of the abstract stuff of `/datum/tgui_window`.
  */
 /datum/tgui
 	/// The mob who opened/is using the UI.
@@ -17,8 +21,6 @@
 	var/datum/tgui_window/window
 	/// Key that is used for remembering the window geometry.
 	var/window_key
-	/// Deprecated: Window size.
-	var/window_size
 	/// The interface (template) to be used for this UI.
 	var/interface
 	/// Update the UI every MC tick.
@@ -37,23 +39,21 @@
 	var/datum/ui_state/state = null
 	/// Rate limit client refreshes to prevent DoS.
 	COOLDOWN_DECLARE(refresh_cooldown)
-
 	/// The id of any ByondUi elements that we have opened
 	var/list/open_byondui_elements
+	/// Deprecated: Window size.
+	var/window_size
 
 /**
- * public
+ * Creates a new UI.
  *
- * Create a new UI.
- *
- * required user mob The mob who opened/is using the UI.
- * required src_object datum The object or datum which owns the UI.
- * required interface string The interface used to render the UI.
- * optional title string The title of the UI.
- * optional ui_x int Deprecated: Window width.
- * optional ui_y int Deprecated: Window height.
- *
- * return datum/tgui The requested UI.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `src_object`—The object or datum which owns the UI
+ * * `interface`—The interface used to render the UI
+ * * `title`—The title of the UI
+ * * `ui_x`—*(deprecated)* The width of the UI
+ * * `ui_y`—*(deprecated)* The height of the UI
  */
 /datum/tgui/New(mob/user, datum/src_object, interface, title, ui_x, ui_y)
 	log_tgui(user,
@@ -76,11 +76,9 @@
 	return ..()
 
 /**
- * public
- *
  * Open this UI (and initialize it with data).
  *
- * return bool - TRUE if a new pooled window is opened, FALSE in all other situations including if a new pooled window didn't open because one already exists.
+ * Returns TRUE if a new pooled window is opened, FALSE in *all other situations.*
  */
 /datum/tgui/proc/open()
 	if(!user.client)
@@ -124,11 +122,10 @@
 		user.client.browse_queue_flush()
 
 /**
- * public
+ * Closes the UI.
  *
- * Close the UI.
- *
- * optional can_be_suspended bool
+ * Arguments:
+ * * `can_be_suspended`—If the UI can be suspended
  */
 /datum/tgui/proc/close(can_be_suspended = TRUE)
 	if(closing)
@@ -151,13 +148,7 @@
 	state = null
 	qdel(src)
 
-/**
- * public
- *
- * Sends a message to the front end to push the UI window to position 0,0
- *
- * optional can_be_suspended bool
- */
+/// Sends a message to the frontend to move the UI window to `0, 0`
 /datum/tgui/proc/reset_ui_position()
 	if(window)
 		// Windows you want to keep are usually blue screens of death
@@ -165,13 +156,9 @@
 		// the error message properly.
 		window.send_message("resetposition")
 
-/**
- * public
- *
- * Closes all ByondUI elements, left dangling by a forceful TGUI exit,
- * such as via Alt+F4, closing or terminating the process
- *
- */
+/// Closes all ByondUI elements, left dangling by a forceful TGUI exit,
+/// such as through closing the window through an OS interaction or
+/// disconnecting then reconnecting
 /datum/tgui/proc/terminate_byondui_elements()
 	set waitfor = FALSE
 
@@ -179,33 +166,30 @@
 		winset(user.client, byondui_element, list("parent" = ""))
 
 /**
- * public
- *
  * Enable/disable auto-updating of the UI.
  *
- * required value bool Enable/disable auto-updating.
+ * Arguments:
+ * * `autoupdate`—The new autoupdate value
  */
 /datum/tgui/proc/set_autoupdate(autoupdate)
 	src.autoupdate = autoupdate
 
 /**
- * public
+ * Replaces the current state with a new one.
  *
- * Replace current ui.state with a new one.
- *
- * required state datum/ui_state/state Next state
+ * Arguments:
+ * * `state`—The next state datum
  */
 /datum/tgui/proc/set_state(datum/ui_state/state)
 	src.state = state
 
 /**
- * public
+ * Makes an asset datum available to use in tgui.
  *
- * Makes an asset available to use in tgui.
+ * Returns true if the asset was actually sent.
  *
- * required asset datum/asset
- *
- * return bool - true if an asset was actually sent
+ * Arguments:
+ * * `asset`—The asset datum to send
  */
 /datum/tgui/proc/send_asset(datum/asset/asset)
 	if(!window)
@@ -213,13 +197,12 @@
 	return window.send_asset(asset)
 
 /**
- * public
+ * Sends a full update to the client (including static data).
  *
- * Send a full update to the client (includes static data).
- *
- * optional custom_data list Custom data to send instead of ui_data.
- * optional force bool Send an update even if UI is not interactive.
- * optional always_instant bool Send and update regardless of the cooldown.
+ * Arguments:
+ * * `custom_data`—Custom data to send instead of a `ui_data` call
+ * * `force`—Sends the update even if the UI isn't supposed to receive updates
+ * * `always_instant`—Ignores the refresh cooldown
  */
 /datum/tgui/proc/send_full_update(custom_data, force, always_instant)
 	if(!user.client || !initialized || closing)
@@ -238,12 +221,11 @@
 		COOLDOWN_START(src, refresh_cooldown, TGUI_REFRESH_FULL_UPDATE_COOLDOWN)
 
 /**
- * public
+ * Sends a partial update to the client (excludes static data).
  *
- * Send a partial update to the client (excludes static data).
- *
- * optional custom_data list Custom data to send instead of ui_data.
- * optional force bool Send an update even if UI is not interactive.
+ * Arguments:
+ * * `custom_data`—Custom data to send instead of a `ui_data` call
+ * * `force`—Sends the update even if the UI isn't supposed to receive updates
  */
 /datum/tgui/proc/send_update(custom_data, force)
 	if(!user.client || !initialized || closing)
@@ -254,13 +236,15 @@
 		with_data = should_update_data))
 
 /**
- * private
+ * Packages the data to send to the UI, as JSON.
  *
- * Package the data to send to the UI, as JSON.
- *
- * return list
+ * Arguments:
+ * * `custom_data`—Data to use. Overrides `with_data`.
+ * * `with_data`—If we should update `ui_data`
+ * * `with_static_data`—If we should update `ui_static_data`
  */
 /datum/tgui/proc/get_payload(custom_data, with_data, with_static_data)
+	PRIVATE_PROC(TRUE)
 	var/list/json_data = list()
 	json_data["config"] = list(
 		"title" = title,
@@ -298,10 +282,12 @@
 	return json_data
 
 /**
- * private
+ * Run an update cycle for this UI. Called internally by `SStgui`
+ * after its wait is complete.
  *
- * Run an update cycle for this UI. Called internally by SStgui
- * every second or so.
+ * Arguments:
+ * * `seconds_per_tick`—Seconds since the last `SStgui` fire. Static, doesn't change unless `SStgui.wait` changes.
+ * * `force`—Ignores the UI's autoupdate status
  */
 /datum/tgui/process(seconds_per_tick, force = FALSE)
 	if(closing)
@@ -330,20 +316,19 @@
 	if(needs_update)
 		window.send_message("update", get_payload())
 
-/**
- * private
- *
- * Updates the status, and returns TRUE if status has changed.
- */
+/// Updates the status, returns `TRUE` if status has changed
 /datum/tgui/proc/process_status()
 	var/prev_status = status
 	status = src_object.ui_status(user, state)
 	return prev_status != status
 
 /**
- * private
+ * Callback for handling incoming messages.
  *
- * Callback for handling incoming tgui messages.
+ * Arguments:
+ * * `type`—The incoming message type
+ * * `payload`—Associative list of parameters
+ * * `href_list`—The raw HREF list from BYOND
  */
 /datum/tgui/proc/on_message(type, list/payload, list/href_list)
 	// Pass act type messages to ui_act

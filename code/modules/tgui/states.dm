@@ -7,12 +7,11 @@
  */
 
 /**
- * public
+ * Checks the interactivity of a UI for a mob.
  *
- * Checks the UI state for a mob.
- *
- * required user mob The mob who opened/is using the UI.
- * required state datum/ui_state The state to check.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `state`—The state datum to check
  *
  * return UI_state The state of the UI.
  */
@@ -38,26 +37,23 @@
 	. = max(., result)
 
 /**
- * private
- *
- * Checks if a user can use src_object's UI, and returns the state.
+ * Checks if a user can use `src_object`'s UI, and returns the state.
  * Can call a mob proc, which allows overrides for each mob.
  *
- * required src_object datum The object/datum which owns the UI.
- * required user mob The mob who opened/is using the UI.
+ * Returns an interactivity define like [UI_CLOSE].
  *
- * return UI_state The state of the UI.
+ * Arguments:
+ * * `src_object`—The datum which owns the UI
+ * * `user`—The mob who opened/is using the UI
  */
 /datum/ui_state/proc/can_use_topic(src_object, mob/user)
 	// Don't allow interaction by default.
 	return UI_CLOSE
 
 /**
- * public
- *
  * Standard interaction/sanity checks. Different mob types may have overrides.
  *
- * return UI_state The state of the UI.
+ * Returns an interactivity define like [UI_CLOSE].
  */
 /mob/proc/shared_ui_interaction(src_object)
 	// Close UIs if mindless.
@@ -92,13 +88,12 @@
 	return ..()
 
 /**
- * public
- *
  * Distance versus interaction check.
  *
- * required src_object atom/movable The object which owns the UI.
+ * Returns an interactivity define like [UI_CLOSE].
  *
- * return UI_state The state of the UI.
+ * Arguments:
+ * * `src_object`—The *movable atom* which owns the UI
  */
 /mob/living/proc/shared_living_ui_distance(atom/movable/src_object, viewcheck = TRUE, allow_tk = TRUE)
 	var/obj/item/item_in_hand = get_active_held_item()

@@ -6,56 +6,55 @@
  */
 
 /**
- * public
- *
- * Used to open and update UIs.
+ * Used to open and update UIs on demand.
  * If this proc is not implemented properly, the UI will not update correctly.
  *
- * required user mob The mob who opened/is using the UI.
- * optional ui datum/tgui The UI to be updated, if it exists.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `ui`—The UI to be updated, if it exists
  */
 /datum/proc/ui_interact(mob/user, datum/tgui/ui)
 	return FALSE // Not implemented.
 
 /**
- * public
- *
  * Data to be sent to the UI.
- * This must be implemented for a UI to work.
+ * This must return an associative list for a UI to work.
  *
- * required user mob The mob interacting with the UI.
- *
- * return list Data to be sent to the UI.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
  */
 /datum/proc/ui_data(mob/user)
 	return list() // Not implemented.
 
 /**
- * public
+ * Static data to be sent to the UI.
  *
- * Static Data to be sent to the UI.
+ * Static data differs from normal data in that it's sent less frequently
+ * (only during window open and forced updates). This is implemented for heavy
+ * UIs that would be sending a lot of redundant data frequently.
  *
- * Static data differs from normal data in that it's large data that should be
- * sent infrequently. This is implemented optionally for heavy uis that would
- * be sending a lot of redundant data frequently. Gets squished into one
- * object on the frontend side, but the static part is cached.
+ * Don't use this for anything that needs to update more often than during
+ * window open and/or forced updates, as updates can slow down UIs with
+ * a loading screen during each update/window open.
  *
- * required user mob The mob interacting with the UI.
+ * Static data is bundled with data on the frontend side. This must return
+ * an associative list.
  *
- * return list Static Data to be sent to the UI.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
  */
 /datum/proc/ui_static_data(mob/user)
 	return list()
 
 /**
- * public
- *
  * Forces an update on static data. Should be done manually whenever something
- * happens to change static data.
+ * happens to change static data. *Should not* be done during frequent events
+ * like processing ticks, as updates can slow down UIs with loading screens.
  *
- * required user the mob currently interacting with the ui
- * optional ui ui to be updated
- * always_instant when set to true stops the ui update cooldown from happening
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `ui`—The UI to be updated, if it exists
+ * * `always_instant`—When set to TRUE, stops the UI update cooldown from happening
  */
 /datum/proc/update_static_data(mob/user, datum/tgui/ui, always_instant)
 	if(!ui)
@@ -64,20 +63,19 @@
 		ui.send_full_update(always_instant = always_instant)
 
 /**
- * public
+ * Forces an update on static data for all viewers.
  *
- * Will force an update on static data for all viewers.
- * Should be done manually whenever something happens to
- * change static data.
+ * Should be done manually whenever something happens to change static data.
+ * *Should not* be done during frequent events like processing ticks, as
+ * updates can slow down UIs with loading screens.
  */
 /datum/proc/update_static_data_for_all_viewers()
 	for (var/datum/tgui/window as anything in open_uis)
 		window.send_full_update()
 
 /**
- * public
+ * Forces an update on non-static data for all viewers.
  *
- * Will force an update on non-static data for all viewers.
  * Use when you are manually controlling UI data updates,
  * such as when you are not using the auto-update system.
  */
@@ -86,15 +84,23 @@
 		ui.send_update()
 
 /**
- * public
+ * Called on a UI when the UI receieves an action from `act(...)` on the frontend.
+ * Think of this as `Topic` but for TGUI.
  *
- * Called on a UI when the UI receieves a href.
- * Think of this as Topic().
+ * **In your implementation, you MUST call parent using `. = ..()` and return
+ * if it's truthy:**
+ * ```dm
+ * 	. = ..()
+ * 	if(.)
+ * 		return
+ * ```
+ * This is a security measure that prevents interacting with uninteractable UIs.
  *
- * required action string The action/button that has been invoked by the user.
- * required params list A list of parameters attached to the button.
+ * Return TRUE to force a UI update and prevent descendants from running.
  *
- * return bool If the user's input has been handled and the UI should update.
+ * Arguments:
+ * * `action`—The action/button that has been invoked by the user
+ * * `params`—An associative list of parameters attached to the button
  */
 /datum/proc/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	SHOULD_CALL_PARENT(TRUE)
@@ -108,80 +114,71 @@
 		user.client.prefs.write_preference(GLOB.preference_entries[layout_prefs_used], params["new_state"])
 
 /**
- * public
+ * Called on an object when a TGUI datum is being created, allowing you to
+ * push various assets to TGUI, like spritesheets.
  *
- * Called on an object when a tgui object is being created, allowing you to
- * push various assets to tgui, for examples spritesheets.
+ * Must return a list of asset datums or file paths.
  *
- * return list List of asset datums or file paths.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
  */
 /datum/proc/ui_assets(mob/user)
 	return list()
 
 /**
- * private
+ * Returns the UI's host object (usually src_object).
  *
- * The UI's host object (usually src_object).
- * This allows modules/datums to have the UI attached to them,
- * and be a part of another object.
+ * This allows datums to point to something that *hosts* them,
+ * for the purpose of UI updating/closing.
+ *
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
  */
 /datum/proc/ui_host(mob/user)
 	return src // Default src.
 
 /**
- * private
+ * The UI's state controller to be used for created UIs.
  *
- * The UI's state controller to be used for created uis
- * This is a proc over a var for memory reasons
+ * This is a getter proc over a var for memory reasons.
+ *
+ * Returns a `/datum/ui_state` global datum.
+ *
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
  */
 /datum/proc/ui_state(mob/user)
 	return GLOB.default_state
 
-/**
- * global
- *
- * Associative list of JSON-encoded shared states that were set by
- * tgui clients.
- */
+/// Associative list of JSON-encoded shared states set by TGUI clients
 /datum/var/list/tgui_shared_states
 
-/**
- * global
- *
- * Tracks open UIs for a user.
- */
+/// The mob's open TGUI datums
 /mob/var/list/tgui_open_uis = list()
 
-/**
- * global
- *
- * Tracks open windows for a user.
- */
+/// The mob's open TGUI window IDs
 /client/var/list/tgui_windows = list()
 
-/**
- * global
- *
- * TRUE if cache was reloaded by tgui dev server at least once.
- */
+/// TRUE if the cache was reloaded by the TGUI dev server at least once
 /client/var/tgui_cache_reloaded = FALSE
 
 /**
- * public
+ * Called on a UI's object when the UI is closed. Not to be confused with
+ * `/client/verb/uiclose()`, which closes the UI window and is a verb
+ * so `winset` can call it.
  *
- * Called on a UI's object when the UI is closed, not to be confused with
- * client/verb/uiclose(), which closes the ui window
+ * Arguments:
+ * * `user`—Mob who opened/is using the UI
  */
 /datum/proc/ui_close(mob/user)
 	SIGNAL_HANDLER
 
 /**
- * verb
- *
  * Called by UIs when they are closed.
  * Must be a verb so winset() can call it.
  *
- * required uiref ref The UI that was closed.
+ * Arguments:
+ * * `window_id`—The ID of the UI that was closed
  */
 /client/verb/uiclose(window_id as text)
 	// Name the verb, and hide it from the user panel.
@@ -196,7 +193,7 @@
 /**
  * Middleware for /client/Topic.
  *
- * return bool If TRUE, prevents propagation of the topic call.
+ * If this returns TRUE, it prevents propagation of the topic call.
  */
 /proc/tgui_Topic(href_list)
 	// Skip non-tgui topics

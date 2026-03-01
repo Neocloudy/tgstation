@@ -83,13 +83,13 @@ SUBSYSTEM_DEF(tgui)
 			return
 
 /**
- * public
+ * Requests a usable TGUI window from the pool.
  *
- * Requests a usable tgui window from the pool.
- * Returns null if pool was exhausted.
+ * Returns the first usable window datum, or null if the user
+ * has no client/the pool has been exhausted.
  *
- * required user mob
- * return datum/tgui_window
+ * Arguments:
+ * * `user`—Mob to get a pooled window of
  */
 /datum/controller/subsystem/tgui/proc/request_pooled_window(mob/user)
 	if(!user.client)
@@ -120,13 +120,7 @@ SUBSYSTEM_DEF(tgui)
 		return null
 	return window
 
-/**
- * public
- *
- * Force closes all tgui windows.
- *
- * required user mob
- */
+/// Force closes all TGUI windows belonging to a user
 /datum/controller/subsystem/tgui/proc/force_close_all_windows(mob/user)
 	log_tgui(user, context = "SStgui/force_close_all_windows")
 	if(user.client)
@@ -136,12 +130,11 @@ SUBSYSTEM_DEF(tgui)
 			user << browse(null, "window=[window_id]")
 
 /**
- * public
+ * Force closes a TGUI window by user and ID.
  *
- * Force closes the tgui window by window_id.
- *
- * required user mob
- * required window_id string
+ * Arguments:
+ * * `user`—User to close a window of
+ * * `window_id`—Window ID to search for
  */
 /datum/controller/subsystem/tgui/proc/force_close_window(mob/user, window_id)
 	log_tgui(user, context = "SStgui/force_close_window")
@@ -153,21 +146,20 @@ SUBSYSTEM_DEF(tgui)
 	user << browse(null, "window=[window_id]")
 
 /**
- * public
+ * Tries to update a UI datum belonging to a user and source datum.
  *
- * Try to find an instance of a UI, and push an update to it.
+ * Returns the updated UI datum if found, null otherwise.
  *
- * required user mob The mob who opened/is using the UI.
- * required src_object datum The object/datum which owns the UI.
- * optional ui datum/tgui The UI to be updated, if it exists.
- * optional force_open bool If the UI should be re-opened instead of updated.
- *
- * return datum/tgui The found UI.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `src_object`—The datum which owns the UI
+ * * `ui`—The UI to be updated (optional)
  */
 /datum/controller/subsystem/tgui/proc/try_update_ui(
-		mob/user,
-		datum/src_object,
-		datum/tgui/ui)
+	mob/user,
+	datum/src_object,
+	datum/tgui/ui,
+)
 	// Look up a UI if it wasn't passed
 	if(isnull(ui))
 		ui = get_open_ui(user, src_object)
@@ -185,14 +177,11 @@ SUBSYSTEM_DEF(tgui)
 	return ui
 
 /**
- * public
+ * Finds and returns an open UI given a user and src_object.
  *
- * Get a open UI given a user and src_object.
- *
- * required user mob The mob who opened/is using the UI.
- * required src_object datum The object/datum which owns the UI.
- *
- * return datum/tgui The found UI.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `src_object`—The datum which owns the UI
  */
 /datum/controller/subsystem/tgui/proc/get_open_ui(mob/user, datum/src_object)
 	// No UIs opened for this src_object
@@ -205,13 +194,12 @@ SUBSYSTEM_DEF(tgui)
 	return null
 
 /**
- * public
+ * Updates all UIs attached to src_object.
  *
- * Update all UIs attached to src_object.
+ * Returns the number of UIs updated.
  *
- * required src_object datum The object/datum which owns the UIs.
- *
- * return int The number of UIs updated.
+ * Arguments:
+ * * `src_object`—The datum which owns the UIs
  */
 /datum/controller/subsystem/tgui/proc/update_uis(datum/src_object)
 	// No UIs opened for this src_object
@@ -226,13 +214,12 @@ SUBSYSTEM_DEF(tgui)
 	return count
 
 /**
- * public
+ * Closes all UIs attached to `src_object`.
  *
- * Close all UIs attached to src_object.
+ * Returns the number of UIs closed.
  *
- * required src_object datum The object/datum which owns the UIs.
- *
- * return int The number of UIs closed.
+ * Arguments:
+ * * `src_object`—The datum which owns the UIs
  */
 /datum/controller/subsystem/tgui/proc/close_uis(datum/src_object)
 	// No UIs opened for this src_object
@@ -247,13 +234,13 @@ SUBSYSTEM_DEF(tgui)
 	return count
 
 /**
- * public
+ * Closes all valid UIs (UIs that have a `src_object` and a `user`).
+ * This will close everyone's UIs.
  *
- * Close all UIs regardless of their attachment to src_object.
- *
- * return int The number of UIs closed.
+ * Returns the number of UIs closed.
  */
 /datum/controller/subsystem/tgui/proc/close_all_uis()
+	PRIVATE_PROC(TRUE)
 	var/count = 0
 	for(var/datum/tgui/ui in all_uis)
 		// Check if UI is valid.
@@ -263,14 +250,13 @@ SUBSYSTEM_DEF(tgui)
 	return count
 
 /**
- * public
+ * Updates all UIs belonging to a user.
  *
- * Update all UIs belonging to a user.
+ * Returns the number of UIs updated.
  *
- * required user mob The mob who opened/is using the UI.
- * optional src_object datum If provided, only update UIs belonging this src_object.
- *
- * return int The number of UIs updated.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `src_object`—If provided, only update UIs belonging to this datum
  */
 /datum/controller/subsystem/tgui/proc/update_user_uis(mob/user, datum/src_object)
 	var/count = 0
@@ -283,14 +269,12 @@ SUBSYSTEM_DEF(tgui)
 	return count
 
 /**
- * public
+ * Closes all UIs belonging to a user.
  *
- * Close all UIs belonging to a user.
+ * Returns the number of UIs closed.
  *
- * required user mob The mob who opened/is using the UI.
- * optional src_object datum If provided, only close UIs belonging this src_object.
- *
- * return int The number of UIs closed.
+ * * `user`—The mob who opened/is using the UI
+ * * `src_object`—If provided, only close UIs belonging to this datum
  */
 /datum/controller/subsystem/tgui/proc/close_user_uis(mob/user, datum/src_object)
 	var/count = 0
@@ -304,14 +288,13 @@ SUBSYSTEM_DEF(tgui)
 
 
 /**
- * public
+ * Resets position of all UIs to `0, 0`.
  *
- * Resets position of all UIs to 0, 0.
+ * Returns the number of UIs affected.
  *
- * required user mob The mob who opened/is using the UI.
- * optional src_object datum If provided, only close UIs belonging this src_object.
- *
- * return int The number of UIs reset.
+ * Arguments:
+ * * `user`—The mob who opened/is using the UI
+ * * `src_object`—If provided, only reset the positions of UIs belonging to this datum
  */
 /datum/controller/subsystem/tgui/proc/reset_ui_position(mob/user, datum/src_object)
 	var/count = 0
@@ -324,11 +307,10 @@ SUBSYSTEM_DEF(tgui)
 	return count
 
 /**
- * private
+ * Adds a UI to the list of tracked UIs.
  *
- * Add a UI to the list of open UIs.
- *
- * required ui datum/tgui The UI to be added.
+ * Arguments:
+ * * `ui`—The datum to be added
  */
 /datum/controller/subsystem/tgui/proc/on_open(datum/tgui/ui)
 	ui.user?.tgui_open_uis |= ui
@@ -336,13 +318,10 @@ SUBSYSTEM_DEF(tgui)
 	all_uis |= ui
 
 /**
- * private
+ * Removes a UI from the list of tracked UIs.
  *
- * Remove a UI from the list of open UIs.
- *
- * required ui datum/tgui The UI to be removed.
- *
- * return bool If the UI was removed or not.
+ * Arguments:
+ * * `ui`—The datum to be removed
  */
 /datum/controller/subsystem/tgui/proc/on_close(datum/tgui/ui)
 	// Remove it from the list of processing UIs.
@@ -356,26 +335,24 @@ SUBSYSTEM_DEF(tgui)
 	return TRUE
 
 /**
- * private
+ * Handles client logout, by closing all their UIs.
  *
- * Handle client logout, by closing all their UIs.
+ * Returns the number of UIs closed.
  *
- * required user mob The mob which logged out.
- *
- * return int The number of UIs closed.
+ * Arguments:
+ * * `user`—The mob which logged out
  */
 /datum/controller/subsystem/tgui/proc/on_logout(mob/user)
-	close_user_uis(user)
+	return close_user_uis(user)
 
 /**
- * private
+ * Handles clients switching mobs, by transferring their UIs.
  *
- * Handle clients switching mobs, by transferring their UIs.
+ * Reutnrs `TRUE` if any UIs were transferred.
  *
- * required user source The client's original mob.
- * required user target The client's new mob.
- *
- * return bool If the UIs were transferred.
+ * Arguments:
+ * * `source`—The client's original mob
+ * * `target`—The client's new mob
  */
 /datum/controller/subsystem/tgui/proc/on_transfer(mob/source, mob/target)
 	// The old mob had no open UIs.

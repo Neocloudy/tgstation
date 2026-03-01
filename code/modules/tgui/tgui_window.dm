@@ -3,37 +3,61 @@
  * SPDX-License-Identifier: MIT
  */
 
+/**
+ * `/datum/tgui_window` represents a raw TGUI window.
+ *
+ * Use this if you're making a completely new interface from almost scratch,
+ * like the TGUI chat panel.
+ */
 /datum/tgui_window
+	/// Unique ID of the window
 	var/id
+	/// Client that owns the window
 	var/client/client
+	/// If the window can be pooled
 	var/pooled
+	/// Index of the window in the pool
 	var/pool_index
+	/// If the window is displayed in a BYOND browser
 	var/is_browser = FALSE
+	/// The window status
 	var/status = TGUI_WINDOW_CLOSED
+	/// If the window is locked
 	var/locked = FALSE
-	var/visible = FALSE
+	/// The UI datum this is locked by
 	var/datum/tgui/locked_by
+	/// If the window is visible
+	var/visible = FALSE
+	/// Datum we are subscribed to for consuming window messages
 	var/datum/subscriber_object
+	/// Proc name on `subscriber_object` to call
 	var/subscriber_delegate
+	/// If the window has fatally errored
 	var/fatally_errored = FALSE
-	var/message_queue
-	var/sent_assets = list()
-	// Vars passed to initialize proc (and saved for later)
+	/// List of messages that will be sent when the UI is ready
+	var/list/message_queue
+	/// Assets that have been sent
+	var/list/sent_assets = list()
+	/// Initial status of strict mode
 	var/initial_strict_mode
+	/// Initial assets of the window
 	var/initial_assets
+	/// Initial inline HTML of the window
 	var/initial_inline_html
+	/// Initial inline JS of the window
 	var/initial_inline_js
+	/// Initial inlince CSS of the window
 	var/initial_inline_css
-
+	/// Associative list of oversized payloads to be handled
 	var/list/oversized_payloads = list()
 
 /**
- * public
+ * Creates a new tgui window.
  *
- * Create a new tgui window.
- *
- * required client /client
- * required id string A unique window identifier.
+ * Arguments:
+ * * `client`—The client that owns the UI
+ * * `id`—A unique window identifier
+ * * `pooled`—If the window can be added to the pool
  */
 /datum/tgui_window/New(client/client, id, pooled = FALSE)
 	src.id = id
@@ -44,24 +68,24 @@
 		src.pool_index = TGUI_WINDOW_INDEX(id)
 
 /**
- * public
- *
  * Initializes the window with a fresh page. Puts window into the "loading"
  * state. You can begin sending messages right after initializing. Messages
  * will be put into the queue until the window finishes loading.
  *
- * optional strict_mode bool - Enables strict error handling and BSOD.
- * optional assets list - List of assets to load during initialization.
- * optional inline_html string - Custom HTML to inject.
- * optional inline_js string - Custom JS to inject.
- * optional inline_css string - Custom CSS to inject.
+ * Arguments:
+ * * `strict_mode`—Enables strict error handling and BSOD. You should enable this.
+ * * `assets`—List of assets to load during initialization
+ * * `inline_html`—Custom HTML to inject
+ * * `inline_js`—Custom JS to inject
+ * * `inline_css`—Custom CSS to inject
  */
 /datum/tgui_window/proc/initialize(
-		strict_mode = FALSE,
-		assets = list(),
-		inline_html = "",
-		inline_js = "",
-		inline_css = "")
+	strict_mode = FALSE,
+	assets = list(),
+	inline_html = "",
+	inline_js = "",
+	inline_css = "",
+)
 	log_tgui(client,
 		context = "[id]/initialize",
 		window = src)
@@ -113,11 +137,7 @@
 	if(!is_browser)
 		winset(client, id, "on-close=\"uiclose [id]\"")
 
-/**
- * public
- *
- * Reinitializes the panel with previous data used for initialization.
- */
+/// Reinitializes the panel with the previous data used for initialization
 /datum/tgui_window/proc/reinitialize()
 	initialize(
 		strict_mode = initial_strict_mode,
@@ -129,23 +149,11 @@
 	for(var/datum/asset/asset in sent_assets)
 		send_asset(asset)
 
-/**
- * public
- *
- * Checks if the window is ready to receive data.
- *
- * return bool
- */
+/// Checks if the window is ready to receive data
 /datum/tgui_window/proc/is_ready()
 	return status == TGUI_WINDOW_READY
 
-/**
- * public
- *
- * Checks if the window can be sanely suspended.
- *
- * return bool
- */
+/// Checks if the window can be safely suspended
 /datum/tgui_window/proc/can_be_suspended()
 	return !fatally_errored \
 		&& pooled \
@@ -154,25 +162,20 @@
 		&& status == TGUI_WINDOW_READY
 
 /**
- * public
- *
  * Acquire the window lock. Pool will not be able to provide this window
  * to other UIs for the duration of the lock.
  *
- * Can be given an optional tgui datum, which will be automatically
- * subscribed to incoming messages via the on_message proc.
+ * Can be given an optional UI datum, which will be automatically
+ * subscribed to incoming messages via the `on_message` proc.
  *
- * optional ui /datum/tgui
+ * Arguments:
+ * * `ui`—The UI this is being locked by
  */
 /datum/tgui_window/proc/acquire_lock(datum/tgui/ui)
 	locked = TRUE
 	locked_by = ui
 
-/**
- * public
- *
- * Release the window lock.
- */
+/// Releases the window lock
 /datum/tgui_window/proc/release_lock()
 	// Clean up assets sent by tgui datum which requested the lock
 	if(locked)
@@ -181,8 +184,6 @@
 	locked_by = null
 
 /**
- * public
- *
  * Subscribes the datum to consume window messages on a specified proc.
  *
  * Note, that this supports only one subscriber, because code for that
@@ -193,21 +194,16 @@
 	subscriber_object = object
 	subscriber_delegate = delegate
 
-/**
- * public
- *
- * Unsubscribes the datum. Do not forget to call this when cleaning up.
- */
+/// Unsubscribes from a datum. Don't forget to call this when cleaning up.
 /datum/tgui_window/proc/unsubscribe(datum/object)
 	subscriber_object = null
 	subscriber_delegate = null
 
 /**
- * public
+ * Closes the window.
  *
- * Close the UI.
- *
- * optional can_be_suspended bool
+ * Arguments:
+ * * `can_be_suspended`—If the window can be suspended
  */
 /datum/tgui_window/proc/close(can_be_suspended = TRUE)
 	if(!client)
@@ -233,13 +229,12 @@
 		client << browse(null, "window=[id]")
 
 /**
- * public
+ * Sends a message to the window.
  *
- * Sends a message to tgui window.
- *
- * required type string Message type
- * required payload list Message payload
- * optional force bool Send regardless of the ready status.
+ * Arguments:
+ * * `type`—The incoming message type
+ * * `payload`—Associative list of parameters
+ * * `force`—Sends regardless of the window being ready
  */
 /datum/tgui_window/proc/send_message(type, payload, force)
 	if(!client)
@@ -256,12 +251,11 @@
 		: "[id].browser:update")
 
 /**
- * public
+ * Sends a raw payload to the window.
  *
- * Sends a raw payload to tgui window.
- *
- * required message string JSON+urlencoded blob to send.
- * optional force bool Send regardless of the ready status.
+ * Arguments:
+ * * `message`—JSON + URL encoded blob to send
+ * * `force`—Sends regardless of the window being ready
  */
 /datum/tgui_window/proc/send_raw_message(message, force)
 	if(!client)
@@ -277,13 +271,12 @@
 		: "[id].browser:update")
 
 /**
- * public
+ * Makes an asset available to use in the window.
  *
- * Makes an asset available to use in tgui.
+ * Returns TRUE if the asset was successfully sent.
  *
- * required asset datum/asset
- *
- * return bool - TRUE if any assets had to be sent to the client
+ * Arguments:
+ * * `asset`—The asset datum to send
  */
 /datum/tgui_window/proc/send_asset(datum/asset/asset)
 	if(!client || !asset)
@@ -298,11 +291,7 @@
 		send_message("asset/stylesheet", spritesheet.css_filename())
 	send_raw_message(asset.get_serialized_url_mappings())
 
-/**
- * private
- *
- * Sends queued messages if the queue wasn't empty.
- */
+/// Sends queued messages if the queue wasn't empty
 /datum/tgui_window/proc/flush_message_queue()
 	if(!client || !message_queue)
 		return
@@ -313,11 +302,10 @@
 	message_queue = null
 
 /**
- * public
- *
  * Replaces the inline HTML content.
  *
- * required inline_html string HTML to inject
+ * Arguments:
+ * * `inline_html`—HTML to inject
  */
 /datum/tgui_window/proc/replace_html(inline_html = "")
 	client << output(url_encode(inline_html), is_browser \
@@ -325,11 +313,14 @@
 		: "[id].browser:replaceHtml")
 
 /**
- * private
+ * Callback for handling incoming messages.
  *
- * Callback for handling incoming tgui messages.
+ * Arguments:
+ * * `type`—The incoming message type
+ * * `payload`—Associative list of parameters
+ * * `href_list`—The raw HREF list from BYOND
  */
-/datum/tgui_window/proc/on_message(type, payload, href_list)
+/datum/tgui_window/proc/on_message(type, list/payload, list/href_list)
 	// Status can be READY if user has refreshed the window.
 	if(type == "ready" && status == TGUI_WINDOW_READY)
 		// Resend the assets
@@ -385,7 +376,9 @@
 			send_message("acknowledgePayloadChunk", list("id" = payload_id))
 
 /datum/tgui_window/vv_edit_var(var_name, var_value)
-	return var_name != NAMEOF(src, id) && ..()
+	if(var_name == NAMEOF(src, id))
+		return FALSE
+	return ..()
 
 /datum/tgui_window/proc/create_oversized_payload(payload_id, message_type, chunk_count)
 	if(oversized_payloads[payload_id])
@@ -395,7 +388,7 @@
 		"type" = message_type,
 		"count" = chunk_count,
 		"chunks" = list(),
-		"timeout" = addtimer(CALLBACK(src, PROC_REF(remove_oversized_payload), payload_id), 1 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
+		"timeout" = addtimer(CALLBACK(src, PROC_REF(remove_oversized_payload), payload_id), 1 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE),
 	)
 
 /datum/tgui_window/proc/append_payload_chunk(payload_id, chunk)

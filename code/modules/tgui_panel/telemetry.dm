@@ -3,15 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/**
- * Maximum number of connection records allowed to analyze.
- * Should match the value set in the browser.
- */
+/// Maximum number of connection records allowed to analyze.
+/// Should match the value set in the browser.
 #define TGUI_TELEMETRY_MAX_CONNECTIONS 5
 
-/**
- * Maximum time allocated for sending a telemetry packet.
- */
+/// Maximum time allocated for sending a telemetry packet
 #define TGUI_TELEMETRY_RESPONSE_WINDOW (30 SECONDS)
 
 /// Time of telemetry request
@@ -21,12 +17,9 @@
 /// List of previous client connections
 /datum/tgui_panel/var/list/telemetry_connections
 
-/**
- * private
- *
- * Requests some telemetry from the client.
- */
+/// Requests some telemetry from the client
 /datum/tgui_panel/proc/request_telemetry()
+	PRIVATE_PROC(TRUE)
 	telemetry_requested_at = world.time
 	telemetry_analyzed_at = null
 	window.send_message("telemetry/request", list(
@@ -35,14 +28,9 @@
 		),
 	))
 
-/**
- * private
- *
- * Analyzes a telemetry packet.
- *
- * Is currently only useful for detecting ban evasion attempts.
- */
+/// Analyzes a telemetry packet for detecting ban evasion attempts
 /datum/tgui_panel/proc/analyze_telemetry(payload)
+	PRIVATE_PROC(TRUE)
 	if(world.time > telemetry_requested_at + TGUI_TELEMETRY_RESPONSE_WINDOW)
 		message_admins("[key_name(client)] sent telemetry outside of the allocated time window.")
 		return
