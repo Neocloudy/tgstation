@@ -1,6 +1,6 @@
 # Using TGUI and Byond API for custom HTML popups
 
-TGUI in its current form would not exist without a very robust underlying layer that interfaces TGUI code with the BYOND browser component. This very layer can also be used to write simple and robust HTML popups, with access to many convenient APIs. In this article, you'll learn how to make a TGUI powered HTML popup and leverage all APIs that it provides.
+TGUI in its current form would not exist without a very robust underlying layer that interfaces TGUI code with the BYOND browser component. This very layer can also be used to write completely custom HTML popups, with access to many convenient APIs. In this article, you'll learn how to make a TGUI powered HTML popup and leverage all APIs that it provides.
 
 ## Table of contents
 
@@ -17,9 +17,11 @@ TGUI in its current form would not exist without a very robust underlying layer 
 
 ## How to create a window
 
-TGUI in order to create a window (popup) uses the `/datum/tgui_window` class. Feel free to take a look at its [source code](../../code/modules/tgui/tgui_window.dm), as all of its procs are very well documented. This class takes care of spawning the BYOND's browser element, normalizes the browser environment (because users might have IE8 on their system, or in future, it might be Microsoft Edge) and specifies a very rigid communication protocol between DM and JS.
+TGUI, in order to create a window (popup), uses the `/datum/tgui_window` type. Feel free to take a look at its [source code](../../code/modules/tgui/tgui_window.dm), as all of its procs are very well documented. This type takes care of spawning BYOND's browser element, normalizes the browser environment, and specifies a very rigid communication protocol between DM and JS.
 
-> **Notice:** Because `/datum/tgui_window` includes a lot of boilerplate in the final html that it displays in the browser, it is somewhat more expensive to render than a traditional, dumb popup using a `browse()` proc call. Therefore, its best to use it with static popups or very custom pieces of client-side code, e.g. stat panel, chat or a background music player.
+> [!NOTE]
+>
+> Because `/datum/tgui_window` includes a lot of boilerplate in the final HTML that it displays in the browser, it is somewhat more expensive to render than a traditional, dumb popup using a `browse()` proc call. Therefore, it's best to use it with static popups or very custom pieces of client-side code, e.g. statpanel, chat or a background music player.
 
 Create a window that prints hello world.
 
@@ -30,9 +32,9 @@ window.initialize(
 )
 ```
 
-Here, `custom_popup` is a unique id for the BYOND skin element that this window uses, and it can be anything you want. If you want to reference a specific element from `interface/skin.dmf`, you can use that id instead, and UI will initialize inside of that element. This is how for example chat initializes itself, by using a `browseroutput` id, which is also specified in `interface/skin.dmf`.
+Here, `custom_popup` is a unique ID for the BYOND skin element that this window uses, and it can be anything you want. If you want to reference a specific element from `interface/skin.dmf`, you can use that ID instead, and UI will initialize inside of that element. This is how for example chat initializes itself, by using a `browseroutput` ID, which is also specified in `interface/skin.dmf`.
 
-In case you want to re-initialize it with different content, you can do that as well by calling `initialize` again with different arguments.
+In case you want to re-initialize it with different contents, you can do that as well by calling `initialize` again with different arguments.
 
 ```dm
 window.initialize(
@@ -48,7 +50,7 @@ window.close()
 
 ## Sending assets
 
-TGUI in /tg/station codebase has `/datum/asset`, that packs scripts and stylesheets for delivery via CDN for efficiency. TGUI internally uses this asset system to render TGUI interfaces _proper_ and TGUI chat. This is a snippet from internal TGUI code:
+TGUI in the /tg/station codebase has `/datum/asset`, that packs scripts and stylesheets for delivery via CDN for efficiency. TGUI internally uses this asset system to render TGUI interfaces _proper_ and TGUI chat. This is a snippet from internal TGUI code:
 
 ```dm
 window.initialize(
@@ -155,10 +157,8 @@ window.send_message("alert", list(
 
 To receive it in JS, you have two different syntaxes. First one is the most verbose one, but allows receiving all types of messages, and deciding what to do via `if` conditions.
 
-> NOTE: We're using ECMAScript 5 syntax here, because this is the version that is supported by IE 11 natively without any additional compilation. If you're coding in a compiled environment (TGUI/Webpack), then feel free to use arrow functions and other fancy syntaxes.
-
 ```js
-Byond.subscribe(function (type, payload) {
+Byond.subscribe((type, payload) => {
 	if (type === 'alert') {
 		window.alert(payload.text);
 		return;
@@ -174,7 +174,7 @@ Byond.subscribe(function (type, payload) {
 Second one is more compact, because it already filters messages by type and passes the payload directly to the callback.
 
 ```js
-Byond.subscribeTo('alert', function (payload) {
+Byond.subscribeTo('alert', (payload) => {
 	window.alert(payload.text);
 });
 ```
@@ -239,7 +239,7 @@ When working with `winset` and `winget`, it can be very useful to consult [BYOND
 
 Another source of information is the official [BYOND Reference](https://secure.byond.com/docs/ref/info.html#/{skin}), which is a much larger, but a more comprehensive doc.
 
-Id of the current tgui window can be accessed via `Byond.windowId`, and below in an example of changing its `size`.
+The ID of the current TGUI window can be accessed via `Byond.windowId`, and below in an example of changing its `size`.
 
 ```js
 Byond.winset(Byond.windowId, {
@@ -247,9 +247,9 @@ Byond.winset(Byond.windowId, {
 });
 ```
 
-Id of the main SS13 window is `'mainwindow'`, as defined in [skin.dmf](../../interface/skin.dmf).
+The ID of the main Dream Seeker window is `'mainwindow'`, as defined in [skin.dmf](../../interface/skin.dmf).
 
-Little known feature, but you can also get non-UI parameters on the client by using a `null` id.
+You can also get non-UI parameters on the client by using a `null` ID.
 
 ```js
 // Fetch URL of a server client is currently connected to
@@ -263,13 +263,13 @@ Byond.winget(null, 'url').then((serverUrl) => {
 
 ## Strict Mode
 
-Strict mode is a flag that you can set on tgui window.
+Strict mode is a flag that you can set on TGUI windows.
 
 ```dm
 window.initialize(strict_mode = TRUE)
 ```
 
-If `TRUE`, unhandled errors and common mistakes result in a blue screen of death with a stack trace of the error, which you can use to debug it. Bluescreened window stops handling incoming messages and closes the active instance of tgui datum if there was one, to avoid a massive spam of errors and help to deal with them one by one.
+If `TRUE`, unhandled errors and common mistakes result in a blue screen of death with a stack trace of the error, which you can use to debug it. Bluescreened windows stop handling incoming messages and close the active UI to avoid a massive spam of errors and help to deal with them one by one.
 
 It can be defined in `window.initialize()` in DM, as shown above, or changed in runtime at runtime via `Byond.strictMode` to `true` or `false`.
 

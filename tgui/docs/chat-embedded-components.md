@@ -1,6 +1,6 @@
 # Chat Embedded Components
 
-Have you ever embedded HTML into TGUI chat? Maybe just css stuff like `<span class='alien'> </span>`?
+Have you ever embedded HTML into TGUI chat? Maybe just CSS stuff like `<span class='alien'> </span>`?
 Have you ever wanted to embed TGUI components instead? For styling or ease of use of course.
 
 Well we have a system for that! You can pass component information in via HTML attributes, and it'll be rendered in chat.
@@ -24,7 +24,7 @@ Here's a sample span that embeds a tooltip around the wrapped text.
 
 `<span data-component=\"Tooltip\" data-content=\"Hey it works!\">Does it work?</span>`
 
-There's two components here, let's break them down.
+There are two components here, let's break them down.
 
 ### Targeting a component
 
