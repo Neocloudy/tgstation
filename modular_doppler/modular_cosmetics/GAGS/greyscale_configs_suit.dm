@@ -196,3 +196,23 @@
 	name = "Fancy Suit (Worn, Teshari)"
 	icon_file = 'modular_doppler/modular_cosmetics/GAGS/icons/mob/suit.dmi'
 	json_config = 'modular_doppler/modular_cosmetics/GAGS/json_configs/suit/fancy_labcoat_tesh_worn.json'
+
+/datum/greyscale_config/big_sweater
+	name = "Big Sweater"
+	icon_file = 'modular_doppler/modular_cosmetics/GAGS/icons/obj/suit.dmi'
+	json_config = 'modular_doppler/modular_cosmetics/GAGS/json_configs/suit/big_sweater.json'
+
+/datum/greyscale_config/big_sweater/worn
+	name = "Big Sweater (Worn)"
+	icon_file = 'modular_doppler/modular_cosmetics/GAGS/icons/mob/suit.dmi'
+	json_config = 'modular_doppler/modular_cosmetics/GAGS/json_configs/suit/big_sweater.json'
+
+/datum/greyscale_config/big_sweater_with_bow
+	name = "Big Sweater With Bow"
+	icon_file = 'modular_doppler/modular_cosmetics/GAGS/icons/obj/suit.dmi'
+	json_config = 'modular_doppler/modular_cosmetics/GAGS/json_configs/suit/big_sweater_bow.json'
+
+/datum/greyscale_config/big_sweater_with_bow/worn
+	name = "Big Sweater With Bow (Worn)"
+	icon_file = 'modular_doppler/modular_cosmetics/GAGS/icons/mob/suit.dmi'
+	json_config = 'modular_doppler/modular_cosmetics/GAGS/json_configs/suit/big_sweater_bow.json'

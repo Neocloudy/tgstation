@@ -334,6 +334,14 @@
 	name = "Peacekeeper Jacket (Security, Badged)"
 	item_path = /obj/item/clothing/suit/jacket/doppler/peacekeeper_jacket/badged
 
+/datum/loadout_item/suit/jacket/big_sweater
+	name = "Big Sweater"
+	item_path = /obj/item/clothing/suit/jacket/doppler/big_sweater
+
+/datum/loadout_item/suit/jacket/big_sweater_with_bow
+	name = "Big Sweater With Bow"
+	item_path = /obj/item/clothing/suit/jacket/doppler/big_sweater/bow
+
 /**
  * HOODIES
  */
