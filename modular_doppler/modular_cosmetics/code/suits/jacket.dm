@@ -566,7 +566,7 @@
 	name = "big sweater"
 	desc = "A big'ol sweater! Makes for an improvised blanket with how huge this thing is."
 	icon = 'icons/map_icons/clothing/suit/_suit.dmi'
-	icon_state = "/obj/item/clothing/suit/doppler/sweater"
+	icon_state = "/obj/item/clothing/suit/jacket/doppler/big_sweater"
 	post_init_icon_state = "sweater"
 	greyscale_config = /datum/greyscale_config/big_sweater
 	greyscale_config_worn = /datum/greyscale_config/big_sweater/worn
@@ -577,7 +577,7 @@
 /obj/item/clothing/suit/jacket/doppler/big_sweater/bow
 	name = "big sweater with bow"
 	desc = "A big'ol sweater with an equally big ribbon bow! Makes for an improvised blanket with how huge this thing is."
-	icon_state = "/obj/item/clothing/suit/doppler/sweater/bow"
+	icon_state = "/obj/item/clothing/suit/jacket/doppler/big_sweater/bow"
 	post_init_icon_state = "sweaterbow"
 	greyscale_config = /datum/greyscale_config/big_sweater_with_bow
 	greyscale_config_worn = /datum/greyscale_config/big_sweater_with_bow/worn
